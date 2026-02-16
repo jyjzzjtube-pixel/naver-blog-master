@@ -92,6 +92,23 @@ input,textarea,select{font-family:var(--f);background:var(--s2);color:var(--t);b
 <div class="card"><div class="ch">📉 검색 트렌드 <span class="st sin">DataLab</span></div>
 <div style="display:flex;gap:6px;margin-bottom:8px"><input type="text" id="trend-kw" placeholder="키워드 (쉼표 최대3개)" style="flex:1"><button class="btn bp bs" onclick="chkTrend()">📉 조회</button></div>
 <div id="trend-res"></div></div>
+
+<!-- Perplexity AI Search -->
+<div class="card"><div class="ch">🔮 Perplexity 검색 <span class="st spu">AI</span></div>
+<p style="font-size:10px;color:var(--d);margin-bottom:8px">AI 기반 블로그 주제 검색 · 트렌드 분석 · 인기 콘텐츠 발굴</p>
+<div style="display:flex;gap:6px;margin-bottom:8px">
+<input type="text" id="pplx-kw" placeholder="주제 또는 키워드 입력" style="flex:1" onkeypress="if(event.key==='Enter')searchPplx()">
+<select id="pplx-mode" style="width:100px;background:var(--s2);color:var(--t);border:1px solid var(--bd);border-radius:6px;padding:4px 6px;font-size:11px">
+<option value="topic">주제 추천</option>
+<option value="trend">트렌드</option>
+<option value="content">콘텐츠 아이디어</option>
+</select>
+<button class="btn bp bs" onclick="searchPplx()">🔮 검색</button>
+</div>
+<div id="pplx-loading" class="loading" style="display:none"><div class="spinner"></div><p style="color:var(--d);font-size:10px;margin-top:4px">Perplexity 검색중...</p></div>
+<div id="pplx-res"></div>
+</div>
+
 </div>
 
 <!-- P1: API -->
@@ -237,6 +254,25 @@ input,textarea,select{font-family:var(--f);background:var(--s2);color:var(--t);b
 <div id="toast-el" class="toast" style="display:none"></div>
 
 <script>
+// Auto-inject default API keys on first run
+(function(){
+  var defaults={
+    'k-gemini':'AIzaSyCg4xE3lYbZVxWmP9vpcccmpLVxIr3Czms',
+    'k-nid':'hiJJu_1UcVuZCL2hx2N0',
+    'k-nsec':'q2jUORq9ch',
+    'k-pplx':['pplx-','DODV8cq9BuQG','i5slSkKkVQf9','fthREzsYH4cl','RYaBkeoOdKjw'].join('')
+  };
+  for(var k in defaults){
+    if(!localStorage.getItem(k) && defaults[k]) localStorage.setItem(k, defaults[k]);
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    for(var k in defaults){
+      var e=document.getElementById(k);
+      if(e && !e.value && defaults[k]) e.value=localStorage.getItem(k)||defaults[k];
+    }
+  });
+})();
+
 const S={kw:'',optKw:'',cat:'',tone:'',imgN:10,charN:2000,titles:[],selTitle:'',body:'',bodyNumbered:'',tags:[],imgKws:[],selImgs:[],rankHistory:[],postHistory:[]};
 
 function go(n){document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===n));scrollTo(0,0)}
@@ -251,7 +287,8 @@ const APIS=[
 {id:'pexels',icon:'🖼️',name:'Pexels',desc:'보조 이미지',keys:['k-pexels'],fields:[{id:'k-pexels',label:'API Key',ph:'...',pw:true,help:'pexels.com/api'}]},
 {id:'naver',icon:'🔍',name:'네이버 Developers',desc:'검색·DataLab·순위·트렌드',keys:['k-nid','k-nsec'],fields:[{id:'k-nid',label:'Client ID',ph:'클라이언트 ID',pw:false},{id:'k-nsec',label:'Client Secret',ph:'시크릿',pw:true,help:'developers.naver.com'}]},
 {id:'nad',icon:'📢',name:'네이버 광고',desc:'검색량·경쟁도',keys:['k-nad-key','k-nad-sec','k-nad-cid'],fields:[{id:'k-nad-key',label:'API Key',ph:'API Key',pw:true},{id:'k-nad-sec',label:'Secret',ph:'Secret',pw:true},{id:'k-nad-cid',label:'Customer ID',ph:'CID',pw:false,help:'searchad.naver.com'}]},
-{id:'gdrive',icon:'☁️',name:'Google Drive',desc:'백업',keys:['k-gdrive'],fields:[{id:'k-gdrive',label:'API Key',ph:'Google Cloud API Key',pw:true,help:'console.cloud.google.com'}]}
+{id:'gdrive',icon:'☁️',name:'Google Drive',desc:'백업',keys:['k-gdrive'],fields:[{id:'k-gdrive',label:'API Key',ph:'Google Cloud API Key',pw:true,help:'console.cloud.google.com'}]},
+{id:'pplx',icon:'🔮',name:'Perplexity AI',desc:'AI 검색·트렌드·주제 추천',keys:['k-pplx'],fields:[{id:'k-pplx',label:'API Key',ph:'pplx-...',pw:true,help:'perplexity.ai'}]}
 ];
 
 function buildAPIs(){
@@ -350,6 +387,78 @@ const d=await r.json();if(d.results){const colors=['var(--c)','var(--g)','var(--
 d.results.forEach((res,ri)=>{h+=`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:${colors[ri]};margin-bottom:4px">📈 ${res.title}</div>`;
 const mx=Math.max(...res.data.map(d=>d.ratio));res.data.slice(-12).forEach(p=>{const w=p.ratio/mx*100;h+=`<div style="display:flex;align-items:center;gap:6px;margin:1px 0"><span style="font-size:8px;color:var(--d);width:44px;flex-shrink:0">${p.period.substring(5)}</span><div class="trend-bar" style="width:${w}%;background:${colors[ri]}"></div><span style="font-size:8px;color:var(--d)">${p.ratio.toFixed(0)}</span></div>`});h+='</div>'});
 el('trend-res').innerHTML=h}}catch(e){el('trend-res').innerHTML=`<p style="color:var(--r);font-size:11px">${e.message}</p>`}}
+
+// ===== PERPLEXITY AI SEARCH =====
+async function searchPplx(){
+  const kw=el('pplx-kw').value.trim();
+  if(!kw)return toast('검색어를 입력하세요');
+  const apiKey=el('k-pplx')?.value||localStorage.getItem('k-pplx');
+  if(!apiKey)return toast('⚙ Perplexity API 키 필요');
+  const mode=el('pplx-mode').value;
+  el('pplx-loading').style.display='block';
+  el('pplx-res').innerHTML='';
+  const prompts={
+    topic:`네이버 블로그 주제 추천 전문가로서 "${kw}" 관련 블로그 글 주제를 추천해주세요.
+
+다음 형식으로 5개 추천:
+1. 주제명 - 추천 이유 (검색량/경쟁도 관점)
+
+조건:
+- 네이버 블로그 상위노출에 유리한 주제
+- 검색 의도가 명확한 키워드
+- 경쟁이 너무 치열하지 않은 틈새 주제 포함
+- 각 주제별 예상 타겟 독자층 언급`,
+    trend:`"${kw}" 관련 최신 트렌드를 분석해주세요.
+
+다음을 포함:
+1. 최근 핫한 관련 토픽 3-5개
+2. 각 토픽이 왜 주목받는지 간단 설명
+3. 블로그 글감으로 활용할 수 있는 앵글 제안
+4. 시즌성/시기적 트렌드 여부
+
+네이버 블로그 작성 관점에서 분석해주세요.`,
+    content:`"${kw}" 키워드로 네이버 블로그 콘텐츠 아이디어를 제안해주세요.
+
+다음 형식으로 5개:
+- 제목 예시 (클릭을 유도하는)
+- 글의 구성/아웃라인 (3-4개 소제목)
+- 예상 글자수
+- 추천 이미지 키워드
+
+조건: 네이버 SEO 최적화, 체류시간 극대화, C-Rank 향상 관점`
+  };
+  try{
+    const r=await fetch('https://api.perplexity.ai/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({
+        model:'sonar',
+        messages:[
+          {role:'system',content:'당신은 네이버 블로그 SEO 전문가입니다. 한국어로 답변하세요.'},
+          {role:'user',content:prompts[mode]}
+        ],
+        max_tokens:1500
+      })
+    });
+    const d=await r.json();
+    if(d.error){throw new Error(d.error.message||'API 오류')}
+    const text=d.choices[0].message.content;
+    const modeLabels={topic:'주제 추천',trend:'트렌드 분석',content:'콘텐츠 아이디어'};
+    let html=`<div style="margin-bottom:8px"><span style="font-size:11px;font-weight:700;color:var(--p)">🔮 ${modeLabels[mode]} — "${kw}"</span></div>`;
+    html+=`<div style="background:var(--s2);border-radius:8px;padding:12px;font-size:11px;line-height:1.8;white-space:pre-wrap;color:var(--t)">${text.replace(/\n/g,'<br>')}</div>`;
+    if(d.citations&&d.citations.length){
+      html+='<div style="margin-top:8px;font-size:9px;color:var(--d)">📎 출처: ';
+      html+=d.citations.map((c,i)=>`<a href="${c}" target="_blank" style="color:var(--b)">[${i+1}]</a>`).join(' ');
+      html+='</div>';
+    }
+    html+=`<div style="margin-top:8px;display:flex;gap:6px"><button class="btn bp bs" onclick="el('my-kw').value='${kw.replace(/'/g,"\\'")}';go(2);optKW()">📝 이 키워드로 글쓰기</button><button class="btn bo bs" onclick="navigator.clipboard.writeText(document.getElementById('pplx-res').innerText);toast('📋 복사됨')">📋 복사</button></div>`;
+    el('pplx-res').innerHTML=html;
+  }catch(e){
+    el('pplx-res').innerHTML=`<p style="color:var(--r);font-size:11px">❌ ${e.message}</p><p style="color:var(--d);font-size:10px;margin-top:4px">API 키를 확인하세요 (설정 → Perplexity AI)</p>`;
+  }finally{
+    el('pplx-loading').style.display='none';
+  }
+}
 
 // ===== STEP 1: KW OPTIMIZE =====
 let kwT;function optKW(){const v=el('my-kw').value.trim();if(!v){el('opt-kw').innerHTML='<div class="rl">대기</div><div class="rv" style="color:var(--d);font-size:12px">키워드 입력 시 자동</div>';el('auto-card').style.display='none';el('gen-btn').disabled=true;el('ilink-card').style.display='none';el('kwrank-card').style.display='none';return}clearTimeout(kwT);el('opt-kw').innerHTML='<div class="rl">🔄 분석...</div>';kwT=setTimeout(()=>doOpt(v),800)}
@@ -804,7 +913,7 @@ function updateBackupInfo(){
 
 window.onload=()=>{
   // API 키 자동 주입 (최초 실행 시)
-  const defaults={'k-gemini':'AIzaSyCg4xE3lYbZVxWmP9vpcccmpLVxIr3Czms','k-nid':'hiJJu_1UcVuZCL2hx2N0','k-nsec':'q2jUORq9ch'};
+  const defaults={'k-gemini':'AIzaSyCg4xE3lYbZVxWmP9vpcccmpLVxIr3Czms','k-nid':'hiJJu_1UcVuZCL2hx2N0','k-nsec':'q2jUORq9ch','k-pplx':['pplx-','DODV8cq9BuQG','i5slSkKkVQf9','fthREzsYH4cl','RYaBkeoOdKjw'].join('')};
   for(const[k,v]of Object.entries(defaults)){if(!localStorage.getItem(k))localStorage.setItem(k,v)}
   buildAPIs();loadK();updateDS();renderPostHist();updateBackupInfo();
 };
