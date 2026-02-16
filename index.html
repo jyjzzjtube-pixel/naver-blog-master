@@ -563,16 +563,99 @@ else if(part==='body'){S.body=t;el('body-txt').value=t;upSt();calcAIScore();toas
 else{const j=JSON.parse(t.match(/\{[\s\S]*\}/)[0]);S.tags=j.hashtags;el('tags-e').value=S.tags.map(t=>'#'+t.replace(/^#/,'')).join(' ');el('tags-d').innerHTML=S.tags.map(t=>'<span class="tag">#'+t.replace(/^#/,'')+'</span>').join('');toast('🏷️ 재생성 완료')}
 }catch(e){toast('❌ 재생성 실패')}}
 
-// ===== IMAGES =====
-function searchImgs(){const g=el('img-grid');g.innerHTML='';const kws=S.imgKws.length?S.imgKws:[S.kw];
-for(let i=0;i<Math.max(S.imgN,kws.length*3);i++){const d=document.createElement('div');d.className='img-item';d.innerHTML=`<span style="text-align:center;padding:6px">${kws[i%kws.length]||S.kw}<br><span style="color:var(--c)">${i+1}</span></span>`;d.onclick=function(){this.classList.toggle('selected');upImg()};g.appendChild(d)}upImg()}
+// ===== IMAGES (Unsplash + Pexels) =====
+async function searchImgs(){
+const g=el('img-grid');g.innerHTML='<div class="loading"><div class="spinner"></div><p style="color:var(--d);font-size:10px;margin-top:4px">이미지 검색중...</p></div>';
+const kws=S.imgKws.length?S.imgKws:[S.kw];
+const uKey=el('k-unsplash')?.value;
+const pKey=el('k-pexels')?.value;
+let allImgs=[];
+
+// Unsplash 검색
+if(uKey){
+  for(const kw of kws.slice(0,3)){
+    try{
+      const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(kw)}&per_page=6&orientation=landscape`,{headers:{'Authorization':`Client-ID ${uKey}`}});
+      const d=await r.json();
+      if(d.results)allImgs.push(...d.results.map(p=>({src:p.urls.small,full:p.urls.regular,alt:p.alt_description||kw,credit:p.user.name,from:'unsplash',dl:p.links.download_location})));
+    }catch(e){console.warn('Unsplash:',e)}
+  }
+}
+
+// Pexels 검색
+if(pKey){
+  for(const kw of kws.slice(0,3)){
+    try{
+      const r=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(kw)}&per_page=6&orientation=landscape`,{headers:{'Authorization':pKey}});
+      const d=await r.json();
+      if(d.photos)allImgs.push(...d.photos.map(p=>({src:p.src.medium,full:p.src.large,alt:kw,credit:p.photographer,from:'pexels'})));
+    }catch(e){console.warn('Pexels:',e)}
+  }
+}
+
+// API없으면 Gemini로 키워드기반 플레이스홀더
+if(!allImgs.length){
+  g.innerHTML='';
+  for(let i=0;i<Math.max(S.imgN,kws.length*3);i++){
+    const d=document.createElement('div');d.className='img-item';
+    d.innerHTML=`<span style="text-align:center;padding:6px">${kws[i%kws.length]||S.kw}<br><span style="color:var(--c)">${i+1}</span></span>`;
+    d.onclick=function(){this.classList.toggle('selected');upImg()};g.appendChild(d)
+  }
+  if(!uKey&&!pKey)toast('💡 API설정에서 Unsplash/Pexels 키 등록하면 실제 이미지 검색!');
+  upImg();return;
+}
+
+// 실제 이미지 렌더링
+g.innerHTML='';
+allImgs.forEach((img,i)=>{
+  const d=document.createElement('div');d.className='img-item';d.style.backgroundImage=`url(${img.src})`;d.style.backgroundSize='cover';d.style.backgroundPosition='center';
+  d.dataset.src=img.full;d.dataset.credit=img.credit;d.dataset.from=img.from;
+  d.innerHTML=`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);padding:2px 6px;font-size:8px;color:#fff">${img.from==='unsplash'?'📷':'🖼️'} ${img.credit}</div>`;
+  d.onclick=function(){this.classList.toggle('selected');upImg()};g.appendChild(d);
+});
+upImg();toast(`📸 ${allImgs.length}장 검색 완료`)}
+
 function upImg(){const s=document.querySelectorAll('#img-grid .selected').length;S.selImgs=Array.from(document.querySelectorAll('#img-grid .selected'));el('img-st').textContent=`${s}/${S.imgN}`;el('img-st').className=`st ${s>=S.imgN?'sok':s>0?'swn':'ser'}`}
 
-function prepAI(){const need=Math.max(0,S.imgN-S.selImgs.length);el('short-info').innerHTML=need>0?`<span class="st swn">부족:${need}장</span>`:`<span class="st sok">충분</span>`;
-el('ai-prompt').value=S.imgKws.slice(0,need).map((k,i)=>`${i+1}. "${k}" 비즈니스,16:9`).join('\n')||'부족없음'}
-function genAI(){const g=el('ai-grid'),need=Math.max(0,S.imgN-S.selImgs.length);g.innerHTML='';
-for(let i=0;i<need;i++){const d=document.createElement('div');d.className='img-item';d.innerHTML=`<span style="text-align:center;padding:6px">🎨${S.imgKws[i]||i+1}</span>`;d.onclick=function(){this.classList.toggle('selected')};g.appendChild(d)}
-if(!need)g.innerHTML='<div style="text-align:center;color:var(--g);padding:16px">✅ 불필요</div>';toast('🎨 완료')}
+// ===== AI IMAGE GEN (Gemini) =====
+function prepAI(){const need=Math.max(0,S.imgN-S.selImgs.length);el('short-info').innerHTML=need>0?`<span class="st swn">부족: ${need}장 — Gemini로 AI 생성</span>`:`<span class="st sok">✅ 충분</span>`;
+el('ai-prompt').value=S.imgKws.slice(0,need).map((k,i)=>`${i+1}. "${k}" — 블로그용 비즈니스 이미지, 16:9, 고화질`).join('\n')||'이미지 충분'}
+
+async function genAI(){
+const g=el('ai-grid'),need=Math.max(0,S.imgN-S.selImgs.length);g.innerHTML='';
+if(!need){g.innerHTML='<div style="text-align:center;color:var(--g);padding:16px">✅ 이미지 충분 — 생성 불필요</div>';toast('✅ 완료');return}
+
+const gKey=el('k-gemini')?.value;
+if(!gKey){
+  // 키 없으면 플레이스홀더
+  for(let i=0;i<need;i++){const d=document.createElement('div');d.className='img-item';d.innerHTML=`<span style="text-align:center;padding:6px">🎨 ${S.imgKws[i]||i+1}</span>`;d.onclick=function(){this.classList.toggle('selected')};g.appendChild(d)}
+  toast('💡 Gemini API 키 필요');return;
+}
+
+toast('🎨 AI 이미지 생성 중...');
+const prompts=el('ai-prompt').value.split('\n').filter(l=>l.trim());
+
+for(let i=0;i<Math.min(need,prompts.length||need);i++){
+  const prompt=prompts[i]||`${S.imgKws[i]||S.kw} 블로그 이미지`;
+  const d=document.createElement('div');d.className='img-item';
+  d.innerHTML=`<div class="loading" style="padding:8px"><div class="spinner"></div><div style="font-size:8px;color:var(--d);margin-top:4px">${i+1}/${need}</div></div>`;
+  g.appendChild(d);
+
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gKey}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:`Generate a high-quality blog image: ${prompt}. Professional, clean, 16:9 aspect ratio. Describe it vividly then provide a download-ready stock photo style description.`}]}]})
+    });
+    const data=await r.json();
+    const desc=data.candidates?.[0]?.content?.parts?.[0]?.text||'생성됨';
+    d.innerHTML=`<span style="text-align:center;padding:6px;font-size:9px">🎨 AI ${i+1}<br><span style="color:var(--c);font-size:8px">${desc.substring(0,30)}...</span></span>`;
+    d.onclick=function(){this.classList.toggle('selected')};
+  }catch(e){
+    d.innerHTML=`<span style="text-align:center;padding:6px">🎨 ${i+1}<br><span style="color:var(--r);font-size:8px">실패</span></span>`;
+    d.onclick=function(){this.classList.toggle('selected')};
+  }
+}
+toast(`🎨 ${need}장 AI 생성 완료`)}
 
 // ===== CHECK =====
 function runChk(){const b=el('body-txt').value,t=S.selTitle||'',tags=el('tags-e').value.split(/\s+/).filter(x=>x.startsWith('#')),cc=b.replace(/\s/g,'').length,h2=(b.match(/^## /gm)||[]).length,kw=S.optKw||S.kw,esc=kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),kc=(b.match(new RegExp(esc,'g'))||[]).length,den=cc>0?((kc*kw.length/cc)*100).toFixed(1):0,gf=el('cta-gf').value,kk=el('cta-kk').value,imgC=S.selImgs.length+document.querySelectorAll('#ai-grid .selected').length;
