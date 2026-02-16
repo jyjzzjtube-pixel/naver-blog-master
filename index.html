@@ -173,32 +173,134 @@ input,textarea,select{font-family:var(--f);background:var(--s2);color:var(--t);b
 <div style="margin-top:8px"><div class="fl">🤖 AI 감지 스코어</div><div class="ai-score-bar"><div class="ai-score-fill" id="ai-fill" style="width:0%;background:var(--g)"></div></div><div style="font-size:9px;color:var(--d);margin-top:2px;display:flex;justify-content:space-between"><span>인간적 ✅</span><span>AI느낌 ⚠️</span></div></div>
 </div>
 <div class="card"><div class="ch">#️⃣ 해시태그 <button class="btn bo bs" onclick="regenPart('tags')" style="margin-left:auto">🔄 재생성</button></div><div id="tags-d"></div><textarea id="tags-e" style="min-height:44px;margin-top:6px"></textarea></div>
-<div class="br"><button class="btn bo" onclick="go(2)">←</button><button class="btn bp" onclick="searchImgs();go(4)">다음: 이미지 →</button></div>
+<div class="br"><button class="btn bo" onclick="go(2)">←</button><button class="btn bp" onclick="runChk();runAIReview();go(6)" style="background:var(--p)">🤖 AI 검수</button><button class="btn bp" onclick="searchImgs();go(4)">다음: 이미지 →</button></div>
 </div></div>
 
 <!-- P4: 이미지 -->
 <div class="panel" id="p4">
-<div class="pt">3️⃣ 이미지 선택</div><div class="ps">클릭 선택 → 본문 반영</div>
-<div class="card"><div class="ch">🖼️ 이미지 <span class="st swn" id="img-st">0/10</span></div>
-<div class="img-grid" id="img-grid"></div></div>
+<div class="pt">3️⃣ 이미지 선택</div><div class="ps">검색/업로드 → 클릭 선택 → 본문 반영</div>
+
+<!-- 이미지 검색 -->
+<div class="card">
+<div class="ch">🔍 이미지 검색 <span class="st swn" id="img-st">0/10</span></div>
+<div style="display:flex;gap:6px;margin-bottom:8px">
+<input type="text" id="img-search-kw" placeholder="이미지 검색어 입력 (예: 카페 인테리어)" style="flex:1" onkeypress="if(event.key==='Enter')manualImgSearch()">
+<button class="btn bp bs" onclick="manualImgSearch()">🔍 검색</button>
+</div>
+<div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+<button class="btn bo bs" onclick="imgSearchSource='all';manualImgSearch()" id="img-src-all" style="border-color:var(--c);color:var(--c)">전체</button>
+<button class="btn bo bs" onclick="imgSearchSource='unsplash';manualImgSearch()" id="img-src-unsplash">Unsplash</button>
+<button class="btn bo bs" onclick="imgSearchSource='pexels';manualImgSearch()" id="img-src-pexels">Pexels</button>
+</div>
+<div id="img-search-status" style="font-size:10px;color:var(--d);margin-bottom:6px"></div>
+<div class="img-grid" id="img-grid"></div>
+</div>
+
+<!-- 로컬 이미지 업로드 -->
+<div class="card">
+<div class="ch">📁 로컬 이미지 업로드</div>
+<p style="font-size:10px;color:var(--d);margin-bottom:8px">PC에서 이미지를 직접 업로드하세요 (여러 장 선택 가능)</p>
+<div style="display:flex;gap:8px;align-items:center">
+<input type="file" id="local-img-input" accept="image/*" multiple onchange="handleLocalImgUpload(this)" style="font-size:11px">
+<button class="btn bo bs" onclick="el('local-img-input').click()">📁 파일 선택</button>
+</div>
+<div class="img-grid" id="local-img-grid" style="margin-top:8px"></div>
+</div>
+
+<!-- 선택된 이미지 요약 -->
+<div class="card">
+<div class="ch">✅ 선택된 이미지 <span class="st sok" id="img-total-st">0장</span></div>
+<div id="img-selected-summary" style="font-size:11px;color:var(--d)">이미지를 클릭하여 선택하세요</div>
+</div>
+
 <div class="br"><button class="btn bo" onclick="go(3)">←</button><button class="btn bp" onclick="prepAI();go(5)">다음 →</button></div>
 </div>
 
 <!-- P5: AI이미지 -->
 <div class="panel" id="p5">
 <div class="pt">4️⃣ AI 이미지 (Gemini)</div>
-<div class="card"><div class="ch">🎨 생성</div><div id="short-info"></div>
-<div class="fr"><div class="fl">프롬프트</div><textarea id="ai-prompt" style="min-height:80px"></textarea></div>
-<button class="btn bp" onclick="genAI()">🎨 생성</button>
-<div class="img-grid" id="ai-grid" style="margin-top:10px"></div></div>
+<div class="card"><div class="ch">🎨 AI 이미지 프롬프트 생성</div><div id="short-info"></div>
+<p style="font-size:10px;color:var(--d);margin-bottom:8px">Gemini AI가 블로그에 사용할 이미지 설명/프롬프트를 자동 생성합니다. 생성된 프롬프트로 DALL-E, Midjourney 등에서 이미지를 만들 수 있습니다.</p>
+<div class="fr"><div class="fl">프롬프트 (편집 가능)</div><textarea id="ai-prompt" style="min-height:100px"></textarea></div>
+<div class="br" style="margin-top:0">
+<button class="btn bp" onclick="genAI()">🎨 AI 프롬프트 생성</button>
+<button class="btn bo" onclick="copyAIPrompts()">📋 프롬프트 복사</button>
+</div>
+<div id="ai-gen-loading" class="loading" style="display:none"><div class="spinner"></div><p style="color:var(--d);font-size:10px;margin-top:4px">AI 생성중...</p></div>
+<div id="ai-grid-results" style="margin-top:12px"></div>
+<div class="img-grid" id="ai-grid" style="margin-top:10px"></div>
+</div>
+
+<!-- Gemini 이미지 직접 생성 -->
+<div class="card">
+<div class="ch">🖼️ Gemini 이미지 직접 생성 <span class="st spu">Imagen</span></div>
+<p style="font-size:10px;color:var(--d);margin-bottom:8px">Gemini API로 이미지를 직접 생성합니다 (Imagen 3 모델 사용)</p>
+<div class="fr"><div class="fl">이미지 설명</div><textarea id="ai-imagen-prompt" placeholder="예: 깔끔한 카페 인테리어, 밝은 조명, 모던한 디자인" style="min-height:60px"></textarea></div>
+<div class="br" style="margin-top:0">
+<button class="btn bg" onclick="genAIImage()">🖼️ 이미지 생성</button>
+</div>
+<div id="ai-imagen-loading" class="loading" style="display:none"><div class="spinner"></div><p style="color:var(--d);font-size:10px;margin-top:4px">이미지 생성중... (10~30초 소요)</p></div>
+<div class="img-grid" id="ai-imagen-grid" style="margin-top:10px"></div>
+</div>
+
 <div class="br"><button class="btn bo" onclick="go(4)">←</button><button class="btn bp" onclick="runChk();go(6)">다음: 검수 →</button></div>
 </div>
 
 <!-- P6: 검수 -->
 <div class="panel" id="p6">
 <div class="pt">5️⃣ 최종 검수</div>
-<div class="card"><div class="ch">🔍 결과</div><div id="chk-score"></div></div>
-<div class="card"><div class="ch">📊 상세</div><div id="chk-list"></div></div>
+
+<!-- 체크리스트 검수 -->
+<div class="card"><div class="ch">🔍 체크리스트 검수</div><div id="chk-score"></div></div>
+<div class="card"><div class="ch">📊 상세 항목</div><div id="chk-list"></div></div>
+
+<!-- AI 검수 변환 -->
+<div class="card" style="border-color:var(--c)">
+<div class="ch">🤖 AI 검수하여 변환 <span class="st spu">Gemini AI</span></div>
+<p style="font-size:10px;color:var(--d);margin-bottom:10px">AI가 본문을 분석하여 문법, SEO 최적화, 가독성을 검수하고 개선된 버전을 제안합니다.</p>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+<label style="display:flex;align-items:center;gap:4px;font-size:10px;cursor:pointer"><input type="checkbox" id="rv-grammar" checked style="width:auto"> 문법/맞춤법</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:10px;cursor:pointer"><input type="checkbox" id="rv-seo" checked style="width:auto"> SEO 최적화</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:10px;cursor:pointer"><input type="checkbox" id="rv-readability" checked style="width:auto"> 가독성</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:10px;cursor:pointer"><input type="checkbox" id="rv-ai-detect" checked style="width:auto"> AI감지 회피</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:10px;cursor:pointer"><input type="checkbox" id="rv-tone" style="width:auto"> 톤 조정</label>
+</div>
+<button class="btn bp bf" onclick="runAIReview()" id="ai-review-btn" style="padding:12px;font-size:13px">🤖 AI 검수 실행</button>
+<div id="ai-review-loading" class="loading" style="display:none"><div class="spinner"></div><p style="color:var(--d);font-size:10px;margin-top:4px">AI 검수중... (15~30초)</p></div>
+</div>
+
+<!-- AI 검수 결과 -->
+<div class="card" id="ai-review-result" style="display:none;border-color:var(--g)">
+<div class="ch">📝 AI 검수 결과 <span class="review-badge">🔍 검수 완료</span></div>
+
+<!-- 요약 -->
+<div id="ai-review-summary" style="margin-bottom:12px"></div>
+
+<!-- 변경 사항 -->
+<div id="ai-review-changes" style="margin-bottom:12px"></div>
+
+<!-- Before/After 비교 -->
+<div style="margin-bottom:12px">
+<div class="fl" style="margin-bottom:6px">📊 Before / After 비교</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div>
+<div style="font-size:10px;font-weight:700;color:var(--r);margin-bottom:4px">수정 전</div>
+<div id="rv-before" style="background:var(--s3);border:1px solid var(--r);border-radius:6px;padding:10px;font-size:11px;max-height:300px;overflow-y:auto;line-height:1.7;white-space:pre-wrap"></div>
+</div>
+<div>
+<div style="font-size:10px;font-weight:700;color:var(--g);margin-bottom:4px">수정 후</div>
+<div id="rv-after" style="background:var(--s3);border:1px solid var(--g);border-radius:6px;padding:10px;font-size:11px;max-height:300px;overflow-y:auto;line-height:1.7;white-space:pre-wrap"></div>
+</div>
+</div>
+</div>
+
+<!-- 적용 버튼 -->
+<div class="br">
+<button class="btn bg" onclick="applyAIReview()" style="flex:1">✅ 수정본 적용</button>
+<button class="btn bo" onclick="el('ai-review-result').style.display='none'" style="flex:1">❌ 무시</button>
+</div>
+</div>
+
 <div class="br"><button class="btn bo" onclick="go(5)">←</button><button class="btn bp" onclick="go(7)">다음 →</button></div>
 </div>
 
@@ -673,44 +775,74 @@ else{const j=JSON.parse(t.match(/\{[\s\S]*\}/)[0]);S.tags=j.hashtags;el('tags-e'
 }catch(e){toast('❌ 재생성 실패')}}
 
 // ===== IMAGES (Unsplash + Pexels) =====
+let imgSearchSource='all';
+let localUploadedImgs=[];
+
 async function searchImgs(){
+  const kws=S.imgKws.length?S.imgKws:[S.kw];
+  el('img-search-kw').value=kws[0]||S.kw;
+  await doImgSearch(kws);
+}
+
+async function manualImgSearch(){
+  const kw=el('img-search-kw').value.trim();
+  if(!kw)return toast('검색어를 입력하세요');
+  await doImgSearch([kw]);
+}
+
+async function doImgSearch(kws){
 const g=el('img-grid');g.innerHTML='<div class="loading"><div class="spinner"></div><p style="color:var(--d);font-size:10px;margin-top:4px">이미지 검색중...</p></div>';
-const kws=S.imgKws.length?S.imgKws:[S.kw];
 const uKey=el('k-unsplash')?.value;
 const pKey=el('k-pexels')?.value;
 let allImgs=[];
 
+// Update source button styles
+['all','unsplash','pexels'].forEach(s=>{
+  const btn=el('img-src-'+s);
+  if(btn){btn.style.borderColor=s===imgSearchSource?'var(--c)':'var(--bd)';btn.style.color=s===imgSearchSource?'var(--c)':'var(--t)'}
+});
+
+// Show API status
+let statusMsg='';
+if(!uKey&&!pKey)statusMsg='<span style="color:var(--y)">⚠️ API 키 미등록 — </span><button class="btn bp bs" onclick="go(1)" style="font-size:9px;padding:3px 8px">API 설정에서 Unsplash/Pexels 키 등록</button>';
+else{
+  if(uKey)statusMsg+='<span class="st sok">Unsplash ✅</span> ';
+  if(pKey)statusMsg+='<span class="st sok">Pexels ✅</span> ';
+  if(!uKey)statusMsg+='<span class="st ser">Unsplash 키 없음</span> ';
+  if(!pKey)statusMsg+='<span class="st ser">Pexels 키 없음</span> ';
+}
+el('img-search-status').innerHTML=statusMsg;
+
 // Unsplash 검색
-if(uKey){
+if(uKey&&(imgSearchSource==='all'||imgSearchSource==='unsplash')){
   for(const kw of kws.slice(0,3)){
     try{
-      const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(kw)}&per_page=6&orientation=landscape`,{headers:{'Authorization':`Client-ID ${uKey}`}});
+      const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(kw)}&per_page=8&orientation=landscape`,{headers:{'Authorization':`Client-ID ${uKey}`}});
       const d=await r.json();
       if(d.results)allImgs.push(...d.results.map(p=>({src:p.urls.small,full:p.urls.regular,alt:p.alt_description||kw,credit:p.user.name,from:'unsplash',dl:p.links.download_location})));
-    }catch(e){console.warn('Unsplash:',e)}
+    }catch(e){console.warn('Unsplash error:',e)}
   }
 }
 
 // Pexels 검색
-if(pKey){
+if(pKey&&(imgSearchSource==='all'||imgSearchSource==='pexels')){
   for(const kw of kws.slice(0,3)){
     try{
-      const r=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(kw)}&per_page=6&orientation=landscape`,{headers:{'Authorization':pKey}});
+      const r=await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(kw)}&per_page=8&orientation=landscape`,{headers:{'Authorization':pKey}});
       const d=await r.json();
       if(d.photos)allImgs.push(...d.photos.map(p=>({src:p.src.medium,full:p.src.large,alt:kw,credit:p.photographer,from:'pexels'})));
-    }catch(e){console.warn('Pexels:',e)}
+    }catch(e){console.warn('Pexels error:',e)}
   }
 }
 
-// API없으면 Gemini로 키워드기반 플레이스홀더
+// API없으면 플레이스홀더
 if(!allImgs.length){
   g.innerHTML='';
-  for(let i=0;i<Math.max(S.imgN,kws.length*3);i++){
-    const d=document.createElement('div');d.className='img-item';
-    d.innerHTML=`<span style="text-align:center;padding:6px">${kws[i%kws.length]||S.kw}<br><span style="color:var(--c)">${i+1}</span></span>`;
-    d.onclick=function(){this.classList.toggle('selected');upImg()};g.appendChild(d)
+  if(!uKey&&!pKey){
+    g.innerHTML='<div style="text-align:center;padding:20px;color:var(--d)"><p style="font-size:12px;margin-bottom:8px">🖼️ 이미지 API 키가 등록되지 않았습니다</p><p style="font-size:10px;margin-bottom:12px">아래 방법으로 이미지를 추가하세요:</p><div style="text-align:left;padding:0 20px"><p style="font-size:11px;margin:4px 0">1. <strong style="color:var(--c)">API 설정</strong>에서 Unsplash/Pexels 키 등록</p><p style="font-size:11px;margin:4px 0">2. 아래 <strong style="color:var(--c)">로컬 이미지 업로드</strong> 사용</p><p style="font-size:11px;margin:4px 0">3. 다음 단계의 <strong style="color:var(--c)">AI 이미지 생성</strong> 사용</p></div></div>';
+  } else {
+    g.innerHTML='<div style="text-align:center;padding:16px;color:var(--d);font-size:11px">검색 결과가 없습니다. 다른 검색어를 시도하세요.</div>';
   }
-  if(!uKey&&!pKey)toast('💡 API설정에서 Unsplash/Pexels 키 등록하면 실제 이미지 검색!');
   upImg();return;
 }
 
@@ -724,54 +856,345 @@ allImgs.forEach((img,i)=>{
 });
 upImg();toast(`📸 ${allImgs.length}장 검색 완료`)}
 
-function upImg(){const s=document.querySelectorAll('#img-grid .selected').length;S.selImgs=Array.from(document.querySelectorAll('#img-grid .selected'));el('img-st').textContent=`${s}/${S.imgN}`;el('img-st').className=`st ${s>=S.imgN?'sok':s>0?'swn':'ser'}`}
+// 로컬 이미지 업로드
+function handleLocalImgUpload(input){
+  const files=input.files;
+  if(!files.length)return;
+  const g=el('local-img-grid');
 
-// ===== AI IMAGE GEN (Gemini) =====
-function prepAI(){const need=Math.max(0,S.imgN-S.selImgs.length);el('short-info').innerHTML=need>0?`<span class="st swn">부족: ${need}장 — Gemini로 AI 생성</span>`:`<span class="st sok">✅ 충분</span>`;
-el('ai-prompt').value=S.imgKws.slice(0,need).map((k,i)=>`${i+1}. "${k}" — 블로그용 비즈니스 이미지, 16:9, 고화질`).join('\n')||'이미지 충분'}
-
-async function genAI(){
-const g=el('ai-grid'),need=Math.max(0,S.imgN-S.selImgs.length);g.innerHTML='';
-if(!need){g.innerHTML='<div style="text-align:center;color:var(--g);padding:16px">✅ 이미지 충분 — 생성 불필요</div>';toast('✅ 완료');return}
-
-const gKey=el('k-gemini')?.value;
-if(!gKey){
-  // 키 없으면 플레이스홀더
-  for(let i=0;i<need;i++){const d=document.createElement('div');d.className='img-item';d.innerHTML=`<span style="text-align:center;padding:6px">🎨 ${S.imgKws[i]||i+1}</span>`;d.onclick=function(){this.classList.toggle('selected')};g.appendChild(d)}
-  toast('💡 Gemini API 키 필요');return;
+  Array.from(files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const d=document.createElement('div');
+      d.className='img-item selected';
+      d.style.backgroundImage=`url(${e.target.result})`;
+      d.style.backgroundSize='cover';
+      d.style.backgroundPosition='center';
+      d.dataset.src=e.target.result;
+      d.dataset.credit='로컬 업로드';
+      d.dataset.from='local';
+      d.dataset.filename=file.name;
+      d.innerHTML=`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);padding:2px 6px;font-size:8px;color:#fff">📁 ${file.name.substring(0,15)}</div>`;
+      d.onclick=function(){this.classList.toggle('selected');upImg()};
+      g.appendChild(d);
+      localUploadedImgs.push({src:e.target.result,name:file.name});
+      upImg();
+    };
+    reader.readAsDataURL(file);
+  });
+  toast(`📁 ${files.length}장 업로드 완료`);
 }
 
-toast('🎨 AI 이미지 생성 중...');
+function upImg(){
+  const searchSel=document.querySelectorAll('#img-grid .selected').length;
+  const localSel=document.querySelectorAll('#local-img-grid .selected').length;
+  const aiSel=document.querySelectorAll('#ai-grid .selected').length+document.querySelectorAll('#ai-imagen-grid .selected').length;
+  const total=searchSel+localSel+aiSel;
+  S.selImgs=Array.from(document.querySelectorAll('#img-grid .selected, #local-img-grid .selected, #ai-grid .selected, #ai-imagen-grid .selected'));
+  el('img-st').textContent=`${total}/${S.imgN}`;
+  el('img-st').className=`st ${total>=S.imgN?'sok':total>0?'swn':'ser'}`;
+  const totalEl=el('img-total-st');
+  if(totalEl){totalEl.textContent=total+'장';totalEl.className=`st ${total>=S.imgN?'sok':total>0?'swn':'ser'}`}
+  const sumEl=el('img-selected-summary');
+  if(sumEl){
+    let parts=[];
+    if(searchSel)parts.push(`검색 ${searchSel}장`);
+    if(localSel)parts.push(`업로드 ${localSel}장`);
+    if(aiSel)parts.push(`AI ${aiSel}장`);
+    sumEl.innerHTML=parts.length?`선택: ${parts.join(' + ')} = <strong style="color:var(--g)">${total}장</strong>`:'이미지를 클릭하여 선택하세요';
+  }
+}
+
+// ===== AI IMAGE GEN (Gemini) =====
+function prepAI(){const need=Math.max(0,S.imgN-S.selImgs.length);el('short-info').innerHTML=need>0?`<span class="st swn">부족: ${need}장 — AI 프롬프트 생성 또는 Gemini 이미지 생성</span>`:`<span class="st sok">✅ 충분</span>`;
+el('ai-prompt').value=S.imgKws.slice(0,Math.max(need,3)).map((k,i)=>`${i+1}. "${k}" — 블로그용 비즈니스 이미지, 16:9, 고화질`).join('\n')||'이미지 충분';
+el('ai-imagen-prompt').value=S.imgKws[0]||S.kw||''}
+
+async function genAI(){
+const resultsEl=el('ai-grid-results');
+const g=el('ai-grid');
+const loadEl=el('ai-gen-loading');
+g.innerHTML='';resultsEl.innerHTML='';
+
+const gKey=el('k-gemini')?.value;
+if(!gKey){toast('💡 Gemini API 키 필요 — API 설정에서 등록하세요');return}
+
+loadEl.style.display='block';
 const prompts=el('ai-prompt').value.split('\n').filter(l=>l.trim());
+if(!prompts.length){loadEl.style.display='none';toast('프롬프트를 입력하세요');return}
 
-for(let i=0;i<Math.min(need,prompts.length||need);i++){
+let allResults=[];
+
+for(let i=0;i<prompts.length;i++){
   const prompt=prompts[i]||`${S.imgKws[i]||S.kw} 블로그 이미지`;
-  const d=document.createElement('div');d.className='img-item';
-  d.innerHTML=`<div class="loading" style="padding:8px"><div class="spinner"></div><div style="font-size:8px;color:var(--d);margin-top:4px">${i+1}/${need}</div></div>`;
-  g.appendChild(d);
-
   try{
     const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gKey}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:`Generate a high-quality blog image: ${prompt}. Professional, clean, 16:9 aspect ratio. Describe it vividly then provide a download-ready stock photo style description.`}]}]})
+      body:JSON.stringify({contents:[{parts:[{text:`블로그 이미지 전문가로서, 다음 주제에 맞는 이미지 프롬프트를 3개 생성해주세요.
+
+주제: ${prompt}
+
+각 프롬프트는:
+1. DALL-E, Midjourney 등에서 바로 사용 가능한 영문 프롬프트
+2. 블로그에 적합한 전문적이고 깔끔한 이미지
+3. 16:9 비율, 고화질
+
+형식:
+1. [한국어 설명]: [영문 프롬프트]
+2. [한국어 설명]: [영문 프롬프트]
+3. [한국어 설명]: [영문 프롬프트]
+
+추가로, 무료 이미지 사이트에서 검색할 수 있는 영문 키워드 3개도 제안해주세요.
+`}]}]})
     });
     const data=await r.json();
-    const desc=data.candidates?.[0]?.content?.parts?.[0]?.text||'생성됨';
-    d.innerHTML=`<span style="text-align:center;padding:6px;font-size:9px">🎨 AI ${i+1}<br><span style="color:var(--c);font-size:8px">${desc.substring(0,30)}...</span></span>`;
-    d.onclick=function(){this.classList.toggle('selected')};
+    const desc=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    allResults.push({prompt:prompt,result:desc});
   }catch(e){
-    d.innerHTML=`<span style="text-align:center;padding:6px">🎨 ${i+1}<br><span style="color:var(--r);font-size:8px">실패</span></span>`;
-    d.onclick=function(){this.classList.toggle('selected')};
+    allResults.push({prompt:prompt,result:'생성 실패: '+e.message});
   }
 }
-toast(`🎨 ${need}장 AI 생성 완료`)}
+
+loadEl.style.display='none';
+
+// Display results
+let html='';
+allResults.forEach((r,i)=>{
+  html+=`<div style="background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:8px">
+    <div style="font-size:11px;font-weight:700;color:var(--c);margin-bottom:6px">📝 ${i+1}. ${r.prompt.substring(0,40)}</div>
+    <div style="font-size:10px;line-height:1.8;white-space:pre-wrap;color:var(--t)">${r.result}</div>
+    <button class="btn bo bs" style="margin-top:6px" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('div:nth-child(2)').textContent);toast('📋 복사됨')">📋 프롬프트 복사</button>
+  </div>`;
+});
+resultsEl.innerHTML=html;
+toast(`🎨 ${allResults.length}개 프롬프트 생성 완료`)}
+
+function copyAIPrompts(){
+  const text=el('ai-prompt').value;
+  if(!text)return toast('프롬프트가 없습니다');
+  navigator.clipboard.writeText(text);toast('📋 프롬프트 복사됨');
+}
+
+// Gemini Imagen 이미지 직접 생성
+async function genAIImage(){
+  const gKey=el('k-gemini')?.value;
+  if(!gKey){toast('💡 Gemini API 키 필요');return}
+  const prompt=el('ai-imagen-prompt').value.trim();
+  if(!prompt){toast('이미지 설명을 입력하세요');return}
+
+  const loadEl=el('ai-imagen-loading');
+  const g=el('ai-imagen-grid');
+  loadEl.style.display='block';
+
+  try{
+    // Try Gemini 2.0 Flash with image generation
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${gKey}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:`Generate a professional blog image: ${prompt}. High quality, 16:9 aspect ratio, clean and modern design.`}]}],
+        generationConfig:{responseModalities:["TEXT","IMAGE"]}
+      })
+    });
+    const data=await r.json();
+
+    if(data.candidates&&data.candidates[0]?.content?.parts){
+      const parts=data.candidates[0].content.parts;
+      let imgFound=false;
+
+      for(const part of parts){
+        if(part.inlineData&&part.inlineData.data){
+          imgFound=true;
+          const imgSrc=`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+          const d=document.createElement('div');
+          d.className='img-item selected';
+          d.style.backgroundImage=`url(${imgSrc})`;
+          d.style.backgroundSize='cover';
+          d.style.backgroundPosition='center';
+          d.dataset.src=imgSrc;
+          d.dataset.credit='Gemini AI';
+          d.dataset.from='gemini';
+          d.innerHTML='<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);padding:2px 6px;font-size:8px;color:#fff">🎨 Gemini AI 생성</div>';
+          d.onclick=function(){this.classList.toggle('selected');upImg()};
+          g.appendChild(d);
+          upImg();
+        }
+      }
+
+      if(!imgFound){
+        // Text response only - show as prompt suggestion
+        const text=parts.find(p=>p.text)?.text||'이미지 생성이 텍스트로 반환되었습니다.';
+        g.innerHTML+=`<div style="background:var(--s2);border-radius:6px;padding:10px;font-size:10px;color:var(--d);grid-column:1/-1">${text.substring(0,200)}<br><br><span style="color:var(--y)">💡 이 모델에서는 이미지 직접 생성이 제한될 수 있습니다. 위의 프롬프트 생성 기능을 사용하거나 로컬 이미지를 업로드하세요.</span></div>`;
+      }
+
+      toast('🎨 이미지 생성 완료');
+    }else{
+      const errMsg=data.error?.message||'이미지 생성 실패';
+      g.innerHTML+=`<div style="background:var(--s2);border-radius:6px;padding:10px;font-size:10px;color:var(--r);grid-column:1/-1">❌ ${errMsg}<br><span style="color:var(--y);margin-top:4px;display:block">💡 프롬프트 생성 기능을 사용하거나 Unsplash/Pexels에서 검색하세요.</span></div>`;
+      toast('이미지 생성 실패 — 프롬프트 기능 사용 권장');
+    }
+  }catch(e){
+    g.innerHTML+=`<div style="background:var(--s2);border-radius:6px;padding:10px;font-size:10px;color:var(--r);grid-column:1/-1">❌ ${e.message}<br><span style="color:var(--y)">💡 다른 방법: 프롬프트 생성 후 외부 AI 이미지 서비스 이용</span></div>`;
+    toast('❌ 생성 실패');
+  }finally{
+    loadEl.style.display='none';
+  }
+}
 
 // ===== CHECK =====
-function runChk(){const b=el('body-txt').value,t=S.selTitle||'',tags=el('tags-e').value.split(/\s+/).filter(x=>x.startsWith('#')),cc=b.replace(/\s/g,'').length,h2=(b.match(/^## /gm)||[]).length,kw=S.optKw||S.kw,esc=kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),kc=(b.match(new RegExp(esc,'g'))||[]).length,den=cc>0?((kc*kw.length/cc)*100).toFixed(1):0,gf=el('cta-gf').value,kk=el('cta-kk').value,imgC=S.selImgs.length+document.querySelectorAll('#ai-grid .selected').length;
+function runChk(){const b=el('body-txt')?.value||'';if(!b)return;const t=S.selTitle||'',tags=(el('tags-e')?.value||'').split(/\s+/).filter(x=>x.startsWith('#')),cc=b.replace(/\s/g,'').length,h2=(b.match(/^## /gm)||[]).length,kw=S.optKw||S.kw,esc=kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),kc=(b.match(new RegExp(esc,'g'))||[]).length,den=cc>0?((kc*kw.length/cc)*100).toFixed(1):0,gf=el('cta-gf')?.value||'',kk=el('cta-kk')?.value||'',imgC=S.selImgs.length;
 const ch=[{n:'제목 25자',ok:t.length>0&&t.length<=25,v:t.length?t.length+'자':'—'},{n:'본문 1500~2200자',ok:cc>=1500&&cc<=2200,v:cc+'자'},{n:'밀도 1.5~2.5%',ok:den>=1.5&&den<=2.5,v:den+'%'},{n:'H2 4~5개',ok:h2>=4&&h2<=5,v:h2+'개'},{n:'이미지 8~15',ok:imgC>=8&&imgC<=15,v:imgC+'장'},{n:'메타 제거',ok:true,v:'자동'},{n:'해시태그 5~10',ok:tags.length>=5&&tags.length<=10,v:tags.length+'개'},{n:'CTA',ok:!!(gf||kk),v:(gf||kk)?'OK':'없음'},{n:'QR변환',ok:true,v:'권장'},{n:'연속이미지',ok:true,v:'OK'}];
 const pass=ch.filter(c=>c.ok).length;
-el('chk-score').innerHTML=`<div style="text-align:center"><div style="font-size:36px;font-weight:900;color:${pass>=8?'var(--g)':pass>=5?'var(--y)':'var(--r)'};font-family:var(--m)">${pass}/10</div><div style="font-size:11px;color:var(--d)">${pass>=8?'✅ 발행 OK':pass>=5?'⚠️ 개선 권장':'❌ 수정'}</div></div>`;
-el('chk-list').innerHTML=ch.map(c=>`<div class="chk-row"><span>${c.n}</span><span class="st ${c.ok?'sok':'ser'}">${c.v} ${c.ok?'✅':'❌'}</span></div>`).join('')}
+const scoreEl=el('chk-score');if(scoreEl)scoreEl.innerHTML=`<div style="text-align:center"><div style="font-size:36px;font-weight:900;color:${pass>=8?'var(--g)':pass>=5?'var(--y)':'var(--r)'};font-family:var(--m)">${pass}/10</div><div style="font-size:11px;color:var(--d)">${pass>=8?'✅ 발행 OK':pass>=5?'⚠️ 개선 권장':'❌ 수정'}</div></div>`;
+const listEl=el('chk-list');if(listEl)listEl.innerHTML=ch.map(c=>`<div class="chk-row"><span>${c.n}</span><span class="st ${c.ok?'sok':'ser'}">${c.v} ${c.ok?'✅':'❌'}</span></div>`).join('')}
+
+// ===== AI REVIEW & CONVERT =====
+let aiReviewedBody='';
+
+async function runAIReview(){
+  const body=el('body-txt')?.value;
+  if(!body||body.length<50){toast('검수할 본문이 없습니다. 먼저 글을 생성하세요.');return}
+
+  const gKey=el('k-gemini')?.value;
+  const cKey=el('k-claude')?.value;
+  if(!gKey&&!cKey){toast('⚙ API 키 필요 — Gemini 또는 Claude API 키를 설정하세요');return}
+
+  const loadEl=el('ai-review-loading');
+  const resultEl=el('ai-review-result');
+  const btnEl=el('ai-review-btn');
+  if(loadEl)loadEl.style.display='block';
+  if(resultEl)resultEl.style.display='none';
+  if(btnEl){btnEl.disabled=true;btnEl.textContent='🔄 검수중...'}
+
+  // Build review criteria
+  const criteria=[];
+  if(el('rv-grammar')?.checked)criteria.push('문법/맞춤법 교정');
+  if(el('rv-seo')?.checked)criteria.push('네이버 SEO 최적화 (키워드 밀도, 소제목 구조, 메타 정보)');
+  if(el('rv-readability')?.checked)criteria.push('가독성 개선 (문장 길이, 단락 구분, 모바일 최적화)');
+  if(el('rv-ai-detect')?.checked)criteria.push('AI 감지 회피 (자연스러운 문체로 변환, "다양한/중요합니다/결론적으로" 제거)');
+  if(el('rv-tone')?.checked)criteria.push('톤 조정 (친근하고 자연스러운 말투)');
+
+  const kw=S.optKw||S.kw;
+
+  const prompt=`당신은 네이버 블로그 SEO 전문 에디터입니다.
+
+아래 블로그 본문을 검수하고 수정된 버전을 제공해주세요.
+
+[메인 키워드] ${kw}
+[카테고리] ${S.cat||'일반'}
+[검수 항목] ${criteria.join(', ')}
+
+[검수 규칙]
+1. 한 문장 최대 40자 — 넘으면 쪼개기
+2. 2~3문장마다 줄바꿈(빈 줄) 추가
+3. "~입니다" 연속 사용 금지 → "~거든요", "~더라고요", "~했어요" 등 섞기
+4. "다양한", "중요합니다", "결론적으로", "종합적으로" → 삭제 또는 대체
+5. 키워드 밀도 1.5~2.5% 유지
+6. 소제목(##) 질문형으로 변환
+7. 숫자/금액 구체적으로
+8. [이미지] 태그 각 소제목 아래 유지
+9. 원문의 핵심 내용과 구조 유지
+
+[출력 형식 — 반드시 JSON만 출력]
+{
+  "summary": "검수 요약 (2~3줄)",
+  "changes": [
+    {"type": "문법"|"SEO"|"가독성"|"AI감지"|"톤", "before": "수정 전 예시 (20자 이내)", "after": "수정 후 예시 (20자 이내)", "reason": "이유"}
+  ],
+  "stats": {
+    "totalChanges": 숫자,
+    "grammarFixes": 숫자,
+    "seoFixes": 숫자,
+    "readabilityFixes": 숫자,
+    "aiDetectFixes": 숫자
+  },
+  "revisedBody": "수정된 전체 본문 (## 소제목 포함)"
+}
+
+[원문]
+${body}`;
+
+  try{
+    let t;
+    if(cKey){
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})});
+      t=(await r.json()).content[0].text;
+    } else {
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${gKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+      t=(await r.json()).candidates[0].content.parts[0].text;
+    }
+
+    const jsonMatch=t.match(/\{[\s\S]*\}/);
+    if(!jsonMatch)throw new Error('JSON 파싱 실패');
+
+    const result=JSON.parse(jsonMatch[0]);
+    aiReviewedBody=result.revisedBody||'';
+
+    // Render summary
+    const sumEl=el('ai-review-summary');
+    if(sumEl){
+      sumEl.innerHTML=`
+        <div style="background:var(--gd);border-radius:8px;padding:12px;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:6px">📊 검수 요약</div>
+          <div style="font-size:11px;line-height:1.8">${result.summary||''}</div>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <span class="st sok">총 수정: ${result.stats?.totalChanges||0}건</span>
+            ${result.stats?.grammarFixes?'<span class="st sin">문법: '+result.stats.grammarFixes+'건</span>':''}
+            ${result.stats?.seoFixes?'<span class="st spu">SEO: '+result.stats.seoFixes+'건</span>':''}
+            ${result.stats?.readabilityFixes?'<span class="st swn">가독성: '+result.stats.readabilityFixes+'건</span>':''}
+            ${result.stats?.aiDetectFixes?'<span class="st ser">AI감지: '+result.stats.aiDetectFixes+'건</span>':''}
+          </div>
+        </div>`;
+    }
+
+    // Render changes
+    const chgEl=el('ai-review-changes');
+    if(chgEl&&result.changes?.length){
+      let chgHtml='<div style="font-size:11px;font-weight:700;color:var(--c);margin-bottom:6px">📝 주요 변경사항</div>';
+      result.changes.slice(0,10).forEach((c,i)=>{
+        const typeColor=c.type==='문법'?'var(--b)':c.type==='SEO'?'var(--p)':c.type==='가독성'?'var(--y)':c.type==='AI감지'?'var(--r)':'var(--c)';
+        chgHtml+=`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:10px;align-items:flex-start">
+          <span style="color:${typeColor};font-weight:600;min-width:44px;flex-shrink:0">${c.type}</span>
+          <span style="color:var(--r);text-decoration:line-through;min-width:0;word-break:break-all">${c.before||''}</span>
+          <span style="color:var(--d)">→</span>
+          <span style="color:var(--g);min-width:0;word-break:break-all">${c.after||''}</span>
+          <span style="color:var(--d);font-size:9px;min-width:0">${c.reason||''}</span>
+        </div>`;
+      });
+      chgEl.innerHTML=chgHtml;
+    }
+
+    // Before/After
+    const beforeEl=el('rv-before');
+    const afterEl=el('rv-after');
+    if(beforeEl)beforeEl.textContent=body.substring(0,500)+(body.length>500?'\n\n... (이하 생략)':'');
+    if(afterEl)afterEl.textContent=(aiReviewedBody||'').substring(0,500)+((aiReviewedBody||'').length>500?'\n\n... (이하 생략)':'');
+
+    if(resultEl)resultEl.style.display='block';
+    toast('🤖 AI 검수 완료');
+
+  }catch(e){
+    toast('❌ AI 검수 실패: '+e.message);
+    const sumEl=el('ai-review-summary');
+    if(sumEl)sumEl.innerHTML=`<div style="color:var(--r);font-size:11px;padding:12px">❌ 검수 실패: ${e.message}<br><span style="color:var(--d);font-size:10px">API 키를 확인하고 다시 시도하세요.</span></div>`;
+    if(resultEl)resultEl.style.display='block';
+  }finally{
+    if(loadEl)loadEl.style.display='none';
+    if(btnEl){btnEl.disabled=false;btnEl.textContent='🤖 AI 검수 실행'}
+  }
+}
+
+function applyAIReview(){
+  if(!aiReviewedBody){toast('적용할 수정본이 없습니다');return}
+  const bodyEl=el('body-txt');
+  if(bodyEl){
+    bodyEl.value=aiReviewedBody;
+    S.body=aiReviewedBody;
+    upSt();
+    calcAIScore();
+  }
+  toast('✅ 수정본이 적용되었습니다');
+  el('rv-badge').style.display='inline-flex';
+}
 
 // ===== FINAL =====
 function buildFinal(){const b=el('body-txt').value,cl=el('cta-cl').value||'문의해주세요 😊',gf=el('cta-gf').value,kk=el('cta-kk').value;
