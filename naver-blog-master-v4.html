@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>네이버 블로그 마스터 v4.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{--bg:#0a0a12;--s1:#0f0f1a;--s2:#15152a;--s3:#1c1c35;--bd:#2a2a50;--g:#00e676;--gd:#00e67615;--r:#ff5252;--y:#ffd740;--b:#448aff;--c:#18ffff;--p:#b388ff;--o:#ff9100;--t:#e0e0f0;--d:#7777aa;--w:#fff;--m:'JetBrains Mono',monospace;--f:'Noto Sans KR',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--t);font-family:var(--f);font-size:13px;line-height:1.6}button{cursor:pointer;font-family:var(--f)}
+input,textarea,select{font-family:var(--f);background:var(--s2);color:var(--t);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;font-size:13px;width:100%;outline:none;transition:.2s}input:focus,textarea:focus,select:focus{border-color:var(--c)}textarea{resize:vertical;min-height:80px}
+.nav{display:flex;overflow-x:auto;gap:2px;padding:6px;background:var(--s1);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100;-webkit-overflow-scrolling:touch}.nav-btn{flex-shrink:0;padding:8px 12px;border:none;background:transparent;color:var(--d);font-size:10px;font-weight:600;border-radius:6px;white-space:nowrap;transition:.2s;display:flex;align-items:center;gap:4px}.nav-btn.active{background:var(--c);color:var(--bg)}.nav-btn:hover:not(.active){background:var(--s3)}.nn{font-family:var(--m);font-size:8px;width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--bd);color:var(--d)}.nav-btn.active .nn{background:var(--bg);color:var(--c)}
+.panel{display:none;padding:14px;max-width:900px;margin:0 auto}.panel.active{display:block}.pt{font-size:18px;font-weight:900;margin-bottom:4px}.ps{font-size:11px;color:var(--d);margin-bottom:16px}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:12px}.ch{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.fl{font-size:10px;font-weight:600;color:var(--d);margin-bottom:4px}.fh{font-size:9px;color:var(--d);margin-top:3px}.fr{margin-bottom:12px}
+.btn{padding:10px 16px;border:none;border-radius:7px;font-weight:700;font-size:12px;transition:.2s}.bp{background:var(--c);color:var(--bg)}.bg{background:var(--g);color:var(--bg)}.bo{background:transparent;border:1px solid var(--bd);color:var(--t)}.bo:hover{border-color:var(--c)}.bs{padding:5px 10px;font-size:10px;border-radius:5px}.bf{width:100%}.br{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.st{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-family:var(--m);padding:2px 7px;border-radius:4px}.sok{background:#00e67620;color:var(--g)}.ser{background:#ff525220;color:var(--r)}.swn{background:#ffd74020;color:var(--y)}.sin{background:#448aff20;color:var(--b)}.spu{background:#b388ff20;color:var(--p)}
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media(max-width:640px){.dash-grid{grid-template-columns:1fr 1fr}}.dash-stat{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center}.dash-stat .dv{font-size:24px;font-weight:900;font-family:var(--m);margin:2px 0}.dash-stat .dl{font-size:9px;color:var(--d)}
+.rank-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--bd);font-size:11px}.rank-row:last-child{border:none}.rn{font-family:var(--m);font-weight:700;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}.r1{background:var(--g);color:var(--bg)}.r2{background:var(--c);color:var(--bg)}.r3{background:var(--b);color:var(--w)}.ro{background:var(--s3);color:var(--d)}.rm{background:var(--g)!important;color:var(--bg)!important;box-shadow:0 0 10px var(--gd)}
+.trend-bar{height:20px;background:var(--c);border-radius:3px;margin:2px 0;min-width:2px;transition:.3s}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.split{grid-template-columns:1fr}}
+.result-box{background:var(--s3);border:1px solid var(--c);border-radius:8px;padding:12px}.result-box .rl{font-size:9px;color:var(--c);font-weight:600;margin-bottom:3px}.result-box .rv{font-size:14px;font-weight:700;color:var(--w)}.result-box .rs{font-size:9px;color:var(--d);margin-top:3px}
+.auto-set{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}.auto-item{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:8px;text-align:center}.auto-item .al{font-size:8px;color:var(--d)}.auto-item .av{font-size:13px;font-weight:700;color:var(--c);margin-top:1px}.auto-item .ar{font-size:8px;color:var(--d);margin-top:1px}
+.tag{display:inline-block;background:var(--s3);border:1px solid var(--bd);color:var(--c);font-size:10px;padding:3px 8px;border-radius:16px;margin:2px}
+.guide{background:linear-gradient(135deg,var(--gd),#448aff15);border:1px solid var(--g);border-radius:10px;padding:16px;margin:12px 0}.guide h3{color:var(--g);font-size:13px;margin-bottom:6px}.guide ol{padding-left:18px}.guide li{font-size:11px;line-height:1.9}.guide .wt{color:var(--y);font-weight:700;font-size:10px;margin-top:3px}
+.loading{text-align:center;padding:24px}.spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--bd);border-top-color:var(--c);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin:10px 0}.img-item{aspect-ratio:16/10;background:var(--s2);border:2px solid var(--bd);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--d);cursor:pointer;overflow:hidden;position:relative;transition:.2s}.img-item:hover{border-color:var(--c)}.img-item.selected{border-color:var(--g);box-shadow:0 0 10px var(--gd)}.img-item.selected::after{content:"✓";position:absolute;top:3px;right:3px;background:var(--g);color:var(--bg);width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900}
+.preview-area{background:#fff;color:#333;border-radius:8px;padding:20px;font-family:'Noto Sans KR',sans-serif;font-size:14px;line-height:1.9;overflow:hidden}.preview-area h2{font-size:17px;font-weight:700;margin:20px 0 10px;color:#222}.preview-area .cta-box{background:#f0f7ff;border:2px solid #4a90d9;border-radius:10px;padding:16px;text-align:center;margin:16px 0}.preview-area .cta-box a{color:#4a90d9;font-weight:700;text-decoration:none}
+.chk-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--bd);font-size:11px}.chk-row:last-child{border:none}
+.review-badge{display:inline-flex;align-items:center;gap:3px;background:var(--gd);border:1px solid var(--g);color:var(--g);padding:3px 8px;border-radius:5px;font-size:9px;font-weight:600}
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--g);color:var(--bg);padding:14px 28px;border-radius:10px;font-weight:700;font-size:14px;z-index:999;pointer-events:none;animation:fadeO 1.5s forwards}@keyframes fadeO{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
+/* Toggle */
+.tw{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;margin-bottom:6px;cursor:pointer;transition:.2s}.tw:hover{border-color:var(--c)}.tw.on{border-color:var(--g)}.tw-info{display:flex;align-items:center;gap:8px;flex:1}.tw-icon{font-size:16px}.tw-name{font-size:12px;font-weight:700}.tw-desc{font-size:9px;color:var(--d)}.tb{font-size:8px;font-family:var(--m);padding:2px 5px;border-radius:3px;margin-right:6px}.tb-on{background:#00e67620;color:var(--g)}.tb-off{background:#ff525215;color:var(--r)}.sw{width:40px;height:22px;border-radius:11px;background:var(--bd);position:relative;transition:.3s;flex-shrink:0}.sw::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--d);transition:.3s}.sw.on{background:var(--g)}.sw.on::after{left:20px;background:var(--w)}.ab{max-height:0;overflow:hidden;transition:max-height .3s;background:var(--s1);border:1px solid var(--bd);border-top:0;border-radius:0 0 10px 10px;margin-top:-7px;margin-bottom:6px}.ab.open{max-height:400px;padding:12px 14px}
+/* Section copy timer */
+.sec-copy{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;margin:4px 0;font-size:11px}.sec-copy .timer{font-family:var(--m);color:var(--y);font-size:11px;min-width:32px}.sec-copy.done{border-color:var(--g);opacity:.6}
+/* Competitor */
+.comp-row{display:grid;grid-template-columns:40px 1fr repeat(4,50px);gap:4px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:10px;align-items:center}.comp-row:last-child{border:none}.comp-head{color:var(--d);font-weight:600}
+/* AI Score */
+.ai-score-bar{height:8px;border-radius:4px;background:var(--bd);overflow:hidden;margin-top:4px}.ai-score-fill{height:100%;border-radius:4px;transition:.5s}
+/* Post history */
+.hist-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd);font-size:11px}.hist-row:last-child{border:none}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+<button class="nav-btn active" onclick="go(0)"><span class="nn">📊</span>대시보드</button>
+<button class="nav-btn" onclick="go(1)"><span class="nn">⚙</span>API</button>
+<button class="nav-btn" onclick="go(2)"><span class="nn">1</span>주제</button>
+<button class="nav-btn" onclick="go(3)"><span class="nn">2</span>글생성</button>
+<button class="nav-btn" onclick="go(4)"><span class="nn">3</span>이미지</button>
+<button class="nav-btn" onclick="go(5)"><span class="nn">4</span>AI이미지</button>
+<button class="nav-btn" onclick="go(6)"><span class="nn">5</span>검수</button>
+<button class="nav-btn" onclick="go(7)"><span class="nn">6</span>CTA</button>
+<button class="nav-btn" onclick="go(8)"><span class="nn">7</span>발행</button>
+<button class="nav-btn" onclick="go(9)"><span class="nn">✏</span>글쓰기</button>
+</nav>
+
+<!-- P0: DASHBOARD -->
+<div class="panel active" id="p0">
+<div class="pt">📊 내 블로그 대시보드</div>
+<div class="ps">네이버 API 실시간 분석</div>
+<div class="card"><div class="ch">🔗 내 블로그</div><div style="display:flex;gap:8px"><input type="text" id="dash-bid" placeholder="블로그 ID" style="flex:1"><button class="btn bp" onclick="runDash()">📊 분석</button></div></div>
+<div class="dash-grid" style="margin-bottom:12px">
+<div class="dash-stat"><div class="dl">포스팅</div><div class="dv" id="ds-post" style="color:var(--g)">—</div></div>
+<div class="dash-stat"><div class="dl">상태</div><div class="dv" id="ds-stat" style="color:var(--c);font-size:14px">—</div></div>
+<div class="dash-stat"><div class="dl">체크 키워드</div><div class="dv" id="ds-kw" style="color:var(--y)">0</div></div>
+<div class="dash-stat"><div class="dl">TOP10 키워드</div><div class="dv" id="ds-top" style="color:var(--p)">0</div></div>
+</div>
+
+<!-- Keyword Rank -->
+<div class="card"><div class="ch">🏆 키워드 순위 체크 <span class="st sin">검색API</span></div>
+<div style="display:flex;gap:6px;margin-bottom:8px"><input type="text" id="rank-kw" placeholder="키워드 입력" style="flex:1" onkeypress="if(event.key==='Enter')chkRank()"><button class="btn bp bs" onclick="chkRank()">🔍 체크</button></div>
+<div id="rank-res"></div><div id="rank-hist"></div></div>
+
+<!-- Competitor Analysis — NEW -->
+<div class="card"><div class="ch">🔎 경쟁 블로그 분석 <span class="st spu">NEW</span></div>
+<p style="font-size:10px;color:var(--d);margin-bottom:8px">키워드 순위 체크 시 상위 1~5위 블로그 스펙 자동 분석</p>
+<div id="comp-res"><p style="color:var(--d);font-size:11px;text-align:center;padding:16px">순위 체크 실행 시 자동 표시</p></div></div>
+
+<!-- Publish Time Recommend — NEW -->
+<div class="card"><div class="ch">⏰ 최적 발행 시간 <span class="st spu">NEW</span></div>
+<div id="pub-time"><p style="color:var(--d);font-size:11px;text-align:center;padding:10px">카테고리 선택 후 자동 추천</p></div></div>
+
+<!-- Posting History — NEW -->
+<div class="card"><div class="ch">📋 포스팅 이력 <span class="st spu">NEW</span></div>
+<div id="post-hist"><p style="color:var(--d);font-size:11px;text-align:center;padding:10px">발행 기록이 여기 자동 저장됩니다</p></div></div>
+
+<!-- My Posts -->
+<div class="card"><div class="ch">📄 내 최근 포스팅 <span class="st sin">RSS</span></div><div id="my-posts"><p style="color:var(--d);font-size:11px;text-align:center;padding:16px">블로그 ID 입력 후 분석</p></div></div>
+
+<!-- Trend -->
+<div class="card"><div class="ch">📉 검색 트렌드 <span class="st sin">DataLab</span></div>
+<div style="display:flex;gap:6px;margin-bottom:8px"><input type="text" id="trend-kw" placeholder="키워드 (쉼표 최대3개)" style="flex:1"><button class="btn bp bs" onclick="chkTrend()">📉 조회</button></div>
+<div id="trend-res"></div></div>
+</div>
+
+<!-- P1: API -->
+<div class="panel" id="p1">
+<div class="pt">⚙️ API 설정</div><div class="ps">ON/OFF 토글 → 키 입력 후 자동 저장</div>
+<div id="api-list"></div>
+<div class="br"><button class="btn bp" onclick="saveK();toast('💾 저장')">💾 저장</button><button class="btn bo" onclick="testK()">🔗 테스트</button></div>
+
+<!-- Backup / Restore -->
+<div class="card" style="margin-top:16px;border-color:var(--g)">
+<div class="ch">💾 데이터 백업 & 복원 <span class="st sok">데이터 보호</span></div>
+<p style="font-size:10px;color:var(--d);margin-bottom:10px">API키, 포스팅 이력, 순위 기록, CTA 설정 등 모든 데이터를 파일로 저장/복원</p>
+<div class="br" style="margin-top:0">
+<button class="btn bg" onclick="backupData()" style="flex:1">📥 백업 다운로드</button>
+<button class="btn bo" onclick="el('restore-file').click()" style="flex:1">📤 복원하기</button>
+<input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreData(this)">
+</div>
+<div id="backup-info" style="margin-top:8px;font-size:9px;color:var(--d)"></div>
+</div>
+
+<!-- Auto backup reminder -->
+<div class="card">
+<div class="ch">⏰ 자동 백업 알림</div>
+<p style="font-size:10px;color:var(--d)">마지막 백업: <strong id="last-backup" style="color:var(--y)">없음</strong></p>
+<p style="font-size:9px;color:var(--d);margin-top:4px">💡 일주일에 1번 백업 권장. 캐시 삭제/기기 변경 시 복원 가능</p>
+</div>
+</div>
+
+<!-- P2: 주제 -->
+<div class="panel" id="p2">
+<div class="pt">1️⃣ 주제 입력</div><div class="ps">키워드 → AI 네이버 최적화 변환</div>
+<div class="card"><div class="ch">🔍 메인 키워드</div>
+<div class="split"><div><div class="fl">내가 입력</div><input type="text" id="my-kw" placeholder="예: 프랜차이즈 창업비용" style="font-size:15px;padding:12px" oninput="optKW()"></div>
+<div style="position:relative"><div class="fl">🤖 네이버 최적화</div><div class="result-box" id="opt-kw"><div class="rl">AI 분석 대기</div><div class="rv" style="color:var(--d);font-size:12px">키워드 입력 시 자동</div></div></div></div></div>
+<div class="card" id="auto-card" style="display:none"><div class="ch">⚡ 자동 셋팅 <span class="st sok">최적화</span></div><div class="auto-set" id="auto-set"></div></div>
+<!-- Internal Link Suggest — NEW -->
+<div class="card" id="ilink-card" style="display:none"><div class="ch">🔗 내부링크 추천 <span class="st spu">NEW</span></div><div id="ilink-res"></div></div>
+<!-- Auto Keyword Rank Check in Step 1 -->
+<div class="card" id="kwrank-card" style="display:none">
+<div class="ch">🏆 키워드 순위 자동 체크 <span class="st sin">검색API</span></div>
+<p style="font-size:10px;color:var(--d);margin-bottom:8px">AI 최적화 키워드 + 서브 키워드 자동 순위 체크</p>
+<div id="kwrank-loading" class="loading" style="display:none"><div class="spinner"></div><p style="color:var(--d);font-size:10px;margin-top:4px">순위 체크중...</p></div>
+<div id="kwrank-res"></div>
+</div>
+<div class="br"><button class="btn bg bf" onclick="startGen()" style="padding:14px;font-size:14px" id="gen-btn" disabled>🚀 AI 글 생성</button></div>
+</div>
+
+<!-- P3: 글생성 -->
+<div class="panel" id="p3">
+<div class="pt">2️⃣ 글 생성</div><div class="ps">AI 생성 → 2차 검토 → 네이버 최적화</div>
+<div id="gen-load" class="loading" style="display:none"><div class="spinner"></div><p id="gen-lt" style="color:var(--d);font-size:11px;margin-top:6px">생성중...</p></div>
+<div id="gen-res" style="display:none">
+<div class="card"><div class="ch">📌 제목 <button class="btn bo bs" onclick="regenPart('title')" style="margin-left:auto">🔄 재생성</button></div><div id="title-opts"></div></div>
+<div class="card"><div class="ch">🔑 키워드</div><div id="kw-disp"></div></div>
+<div class="card"><div class="ch">📝 본문 <span class="review-badge" id="rv-badge" style="display:none">🔍 2차검토</span><button class="btn bo bs" onclick="regenPart('body')" style="margin-left:auto">🔄 재생성</button></div>
+<textarea id="body-txt" style="min-height:360px;font-size:13px;line-height:1.8"></textarea>
+<div style="display:flex;justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:3px">
+<span class="st sok" id="st-ch">0자</span><span class="st sok" id="st-de">0%</span><span class="st sin" id="st-h2">H2:0</span>
+<!-- AI Detection Score — NEW -->
+<span class="st spu" id="st-ai">AI감지: —</span>
+</div>
+<div style="margin-top:8px"><div class="fl">🤖 AI 감지 스코어</div><div class="ai-score-bar"><div class="ai-score-fill" id="ai-fill" style="width:0%;background:var(--g)"></div></div><div style="font-size:9px;color:var(--d);margin-top:2px;display:flex;justify-content:space-between"><span>인간적 ✅</span><span>AI느낌 ⚠️</span></div></div>
+</div>
+<div class="card"><div class="ch">#️⃣ 해시태그 <button class="btn bo bs" onclick="regenPart('tags')" style="margin-left:auto">🔄 재생성</button></div><div id="tags-d"></div><textarea id="tags-e" style="min-height:44px;margin-top:6px"></textarea></div>
+<div class="br"><button class="btn bo" onclick="go(2)">←</button><button class="btn bp" onclick="searchImgs();go(4)">다음: 이미지 →</button></div>
+</div></div>
+
+<!-- P4: 이미지 -->
+<div class="panel" id="p4">
+<div class="pt">3️⃣ 이미지 선택</div><div class="ps">클릭 선택 → 본문 반영</div>
+<div class="card"><div class="ch">🖼️ 이미지 <span class="st swn" id="img-st">0/10</span></div>
+<div class="img-grid" id="img-grid"></div></div>
+<div class="br"><button class="btn bo" onclick="go(3)">←</button><button class="btn bp" onclick="prepAI();go(5)">다음 →</button></div>
+</div>
+
+<!-- P5: AI이미지 -->
+<div class="panel" id="p5">
+<div class="pt">4️⃣ AI 이미지 (Gemini)</div>
+<div class="card"><div class="ch">🎨 생성</div><div id="short-info"></div>
+<div class="fr"><div class="fl">프롬프트</div><textarea id="ai-prompt" style="min-height:80px"></textarea></div>
+<button class="btn bp" onclick="genAI()">🎨 생성</button>
+<div class="img-grid" id="ai-grid" style="margin-top:10px"></div></div>
+<div class="br"><button class="btn bo" onclick="go(4)">←</button><button class="btn bp" onclick="runChk();go(6)">다음: 검수 →</button></div>
+</div>
+
+<!-- P6: 검수 -->
+<div class="panel" id="p6">
+<div class="pt">5️⃣ 최종 검수</div>
+<div class="card"><div class="ch">🔍 결과</div><div id="chk-score"></div></div>
+<div class="card"><div class="ch">📊 상세</div><div id="chk-list"></div></div>
+<div class="br"><button class="btn bo" onclick="go(5)">←</button><button class="btn bp" onclick="go(7)">다음 →</button></div>
+</div>
+
+<!-- P7: CTA -->
+<div class="panel" id="p7">
+<div class="pt">6️⃣ CTA</div>
+<div class="card"><div class="ch">📋 구글폼</div><input type="url" id="cta-gf" placeholder="https://docs.google.com/forms/..." oninput="saveCTA()"></div>
+<div class="card"><div class="ch">💬 카카오</div><input type="url" id="cta-kk" placeholder="https://open.kakao.com/o/..." oninput="saveCTA()"></div>
+<div class="card"><div class="ch">✍️ 인사말</div><textarea id="cta-cl" placeholder="궁금하시면 편하게 문의하세요 😊" oninput="saveCTA()" style="min-height:50px"></textarea></div>
+<div class="guide"><h3>⚠️ 외부링크 주의</h3><ol><li>반복 삽입 → 저품질</li><li>구글폼/카톡 → <strong>QR변환</strong> 권장</li><li>본문 + 인사말 → 맨 마지막 링크 2개</li></ol></div>
+<div class="br"><button class="btn bo" onclick="go(6)">←</button><button class="btn bg" onclick="buildFinal();go(8)">✅ 완성 → 발행</button></div>
+</div>
+
+<!-- P8: 발행가이드 -->
+<div class="panel" id="p8">
+<div class="pt">7️⃣ 발행 가이드</div>
+<div class="guide"><h3>📋 발행 순서</h3><ol>
+<li>제목 <strong>직접 타이핑</strong><br><span class="wt">💡 타이핑 권장</span></li>
+<li>본문 소제목 단위로 나눠서 붙여넣기<br><span class="wt">💡 10~15초 간격. 아래 타이머 사용</span></li>
+<li>이미지 2~3장씩 드래그</li>
+<li>소제목 "제목2" 서식</li>
+<li>해시태그 붙여넣기</li>
+<li>카테고리 → 발행</li>
+</ol></div>
+
+<!-- Section-by-Section Copy with Timer — NEW -->
+<div class="card"><div class="ch">📝 소제목 단위 복사 <span class="st spu">NEW — 타이머 자동</span></div>
+<p style="font-size:10px;color:var(--d);margin-bottom:8px">순서대로 [복사] 클릭 → 네이버에 붙여넣기 → 타이머 끝나면 다음 [복사]</p>
+<div id="sec-copy-list"></div></div>
+
+<div class="card"><div class="ch">📌 전체 복사</div><div class="br" style="flex-wrap:wrap">
+<button class="btn bp bs" onclick="cp('title')">제목</button>
+<button class="btn bp bs" onclick="cp('body')">본문</button>
+<button class="btn bp bs" onclick="cp('tags')">해시태그</button>
+<button class="btn bp bs" onclick="cp('cta')">CTA</button>
+<button class="btn bg bs" onclick="cp('all')">📦 전체</button>
+</div></div>
+
+<div class="card"><div class="ch">👁️ 미리보기</div><div class="preview-area" id="preview"></div></div>
+
+<div class="br"><button class="btn bo" onclick="go(7)">←</button><button class="btn bg" onclick="savePostHistory();go(9)">✏️ 글쓰기 이동 →</button></div>
+</div>
+
+<!-- P9: 글쓰기 -->
+<div class="panel" id="p9">
+<div class="pt">✏️ 네이버 글쓰기</div>
+<div class="card"><div class="ch">🔗 블로그 ID</div><input type="text" id="blog-id" placeholder="블로그 ID" oninput="localStorage.setItem('bid',this.value)"></div>
+<div class="br" style="flex-direction:column;gap:10px;margin-top:14px">
+<a id="wr-link" href="https://blog.naver.com/GoBlogWrite.naver" target="_blank" style="text-decoration:none"><button class="btn bg bf" style="padding:16px;font-size:15px">✏️ 새 글쓰기</button></a>
+<a href="https://blog.naver.com" target="_blank" style="text-decoration:none"><button class="btn bo bf">🏠 블로그 홈</button></a>
+</div></div>
+
+<div id="toast-el" class="toast" style="display:none"></div>
+
+<script>
+const S={kw:'',optKw:'',cat:'',tone:'',imgN:10,charN:2000,titles:[],selTitle:'',body:'',bodyNumbered:'',tags:[],imgKws:[],selImgs:[],rankHistory:[],postHistory:[]};
+
+function go(n){document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===n));scrollTo(0,0)}
+function el(id){return document.getElementById(id)}
+function toast(m){const e=el('toast-el');e.textContent=m;e.style.display='block';e.style.animation='none';e.offsetHeight;e.style.animation='fadeO 1.5s forwards';setTimeout(()=>e.style.display='none',1600)}
+
+// ===== API =====
+const APIS=[
+{id:'claude',icon:'🤖',name:'Claude API',desc:'글 생성·2차검토',keys:['k-claude'],fields:[{id:'k-claude',label:'API Key',ph:'sk-ant-api03-...',pw:true,help:'console.anthropic.com'}]},
+{id:'gemini',icon:'💎',name:'Gemini API',desc:'글 생성·이미지 생성',keys:['k-gemini'],fields:[{id:'k-gemini',label:'API Key',ph:'AIzaSy...',pw:true,help:'aistudio.google.com'}]},
+{id:'unsplash',icon:'📷',name:'Unsplash',desc:'무료 이미지',keys:['k-unsplash'],fields:[{id:'k-unsplash',label:'Access Key',ph:'Client-ID',pw:true,help:'unsplash.com/developers'}]},
+{id:'pexels',icon:'🖼️',name:'Pexels',desc:'보조 이미지',keys:['k-pexels'],fields:[{id:'k-pexels',label:'API Key',ph:'...',pw:true,help:'pexels.com/api'}]},
+{id:'naver',icon:'🔍',name:'네이버 Developers',desc:'검색·DataLab·순위·트렌드',keys:['k-nid','k-nsec'],fields:[{id:'k-nid',label:'Client ID',ph:'클라이언트 ID',pw:false},{id:'k-nsec',label:'Client Secret',ph:'시크릿',pw:true,help:'developers.naver.com'}]},
+{id:'nad',icon:'📢',name:'네이버 광고',desc:'검색량·경쟁도',keys:['k-nad-key','k-nad-sec','k-nad-cid'],fields:[{id:'k-nad-key',label:'API Key',ph:'API Key',pw:true},{id:'k-nad-sec',label:'Secret',ph:'Secret',pw:true},{id:'k-nad-cid',label:'Customer ID',ph:'CID',pw:false,help:'searchad.naver.com'}]},
+{id:'gdrive',icon:'☁️',name:'Google Drive',desc:'백업',keys:['k-gdrive'],fields:[{id:'k-gdrive',label:'API Key',ph:'Google Cloud API Key',pw:true,help:'console.cloud.google.com'}]}
+];
+
+function buildAPIs(){
+let h='';APIS.forEach(a=>{
+h+=`<div class="tw" id="tw-${a.id}" onclick="togAPI('${a.id}')"><div class="tw-info"><span class="tw-icon">${a.icon}</span><div><div class="tw-name">${a.name}</div><div class="tw-desc">${a.desc}</div></div></div><div style="display:flex;align-items:center"><span class="tb tb-off" id="tb-${a.id}">OFF</span><div class="sw" id="sw-${a.id}"></div></div></div>`;
+h+=`<div class="ab" id="ab-${a.id}">`;
+a.fields.forEach(f=>{h+=`<div class="fr"><div class="fl">${f.label}</div><input type="${f.pw?'password':'text'}" id="${f.id}" placeholder="${f.ph}" oninput="saveK()">${f.help?'<div class="fh">'+f.help+'</div>':''}</div>`});
+h+='</div>';
+});el('api-list').innerHTML=h}
+
+const allKeys=APIS.flatMap(a=>a.keys);
+function saveK(){allKeys.forEach(k=>{const e=el(k);if(e)localStorage.setItem(k,e.value)});syncToggles()}
+function loadK(){allKeys.forEach(k=>{const v=localStorage.getItem(k);const e=el(k);if(v&&e)e.value=v});['cta-gf','cta-kk','cta-cl'].forEach(k=>{const v=localStorage.getItem(k);if(v)el(k).value=v});const b=localStorage.getItem('bid');if(b){el('blog-id').value=b;el('dash-bid').value=b;el('wr-link').href=`https://blog.naver.com/${b}/postwrite`};const rh=localStorage.getItem('rankHist');if(rh)try{S.rankHistory=JSON.parse(rh)}catch(e){};const ph=localStorage.getItem('postHist');if(ph)try{S.postHistory=JSON.parse(ph);renderPostHist()}catch(e){};syncToggles()}
+function testK(){let r='';APIS.forEach(a=>{const on=localStorage.getItem('api-'+a.id)==='1';r+=`${a.icon} ${a.name}: ${on?'✅':'❌'}\n`});toast(r)}
+function saveCTA(){['cta-gf','cta-kk','cta-cl'].forEach(k=>localStorage.setItem(k,el(k).value))}
+
+function togAPI(id){const on=localStorage.getItem('api-'+id)==='1';setTog(id,!on);localStorage.setItem('api-'+id,on?'0':'1')}
+function setTog(id,on){const tw=el('tw-'+id),sw=el('sw-'+id),tb=el('tb-'+id),ab=el('ab-'+id);if(!tw)return;tw.classList.toggle('on',on);sw.classList.toggle('on',on);tb.textContent=on?'ON':'OFF';tb.className='tb '+(on?'tb-on':'tb-off');ab.classList.toggle('open',on)}
+function syncToggles(){APIS.forEach(a=>{const saved=localStorage.getItem('api-'+a.id);if(saved)setTog(a.id,saved==='1');else{const has=a.keys.some(k=>{const e=el(k);return e&&e.value.trim()});setTog(a.id,has);localStorage.setItem('api-'+a.id,has?'1':'0')}})}
+
+// ===== DASHBOARD =====
+async function runDash(){const bid=el('dash-bid').value.trim();if(!bid)return toast('ID입력');localStorage.setItem('bid',bid);el('blog-id').value=bid;el('wr-link').href=`https://blog.naver.com/${bid}/postwrite`;await fetchPosts(bid);renderRankHist();updateDS();renderPubTime()}
+
+async function fetchPosts(bid){
+el('my-posts').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+const nid=el('k-nid')?.value,nsec=el('k-nsec')?.value;
+if(!nid||!nsec){el('my-posts').innerHTML='<p style="color:var(--y);font-size:11px;text-align:center;padding:16px">⚠️ 네이버 API 키 필요 → <button class="btn bp bs" onclick="go(1)">API설정</button></p>';return}
+try{const r=await fetch(`https://openapi.naver.com/v1/search/blog.json?query=site:blog.naver.com/${bid}&display=20&sort=date`,{headers:{'X-Naver-Client-Id':nid,'X-Naver-Client-Secret':nsec}});const d=await r.json();
+if(d.items?.length){el('ds-post').textContent=d.total||d.items.length;el('ds-stat').textContent='정상';
+let h='';d.items.slice(0,8).forEach((it,i)=>{const t=it.title.replace(/<[^>]*>/g,'');const dt=it.postdate?it.postdate.replace(/(\d{4})(\d{2})(\d{2})/,'$1.$2.$3'):'';h+=`<div class="rank-row"><span style="display:flex;align-items:center;gap:6px"><span class="rn ro">${i+1}</span><span style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t}</span></span><span style="font-family:var(--m);font-size:9px;color:var(--d)">${dt}</span></div>`});
+el('my-posts').innerHTML=h}else{el('my-posts').innerHTML='<p style="color:var(--d);font-size:11px;text-align:center;padding:16px">포스팅 없음</p>';el('ds-post').textContent='0'}}catch(e){el('my-posts').innerHTML=`<p style="color:var(--r);font-size:11px">${e.message}</p>`}}
+
+// ===== KEYWORD RANK + COMPETITOR =====
+async function chkRank(){
+const kw=el('rank-kw').value.trim(),bid=el('dash-bid').value.trim()||localStorage.getItem('bid');
+if(!kw)return toast('키워드 입력');if(!bid)return toast('블로그 ID 입력');
+const nid=el('k-nid')?.value,nsec=el('k-nsec')?.value;if(!nid||!nsec)return toast('⚙ API 필요');
+el('rank-res').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+try{const r=await fetch(`https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(kw)}&display=30&sort=sim`,{headers:{'X-Naver-Client-Id':nid,'X-Naver-Client-Secret':nsec}});const d=await r.json();
+let myRank=0,h='',compData=[];
+if(d.items){d.items.forEach((it,i)=>{
+const mine=it.bloggerlink?.includes(bid);if(mine&&!myRank)myRank=i+1;
+const t=it.title.replace(/<[^>]*>/g,'');const desc=it.description?.replace(/<[^>]*>/g,'')||'';
+if(i<5)compData.push({rank:i+1,title:t.substring(0,25),chars:desc.length,name:it.bloggername||''});
+if(i<10||mine){const rc=i===0?'r1':i===1?'r2':i===2?'r3':'ro';
+h+=`<div class="rank-row" style="${mine?'background:var(--gd);border-radius:5px':''}"><div style="display:flex;align-items:center;gap:8px"><span class="rn ${mine?'rm':rc}">${i+1}</span><span style="${mine?'color:var(--g);font-weight:700':''}">${t.substring(0,35)}${t.length>35?'...':''}</span></div><span style="font-size:9px;color:${mine?'var(--g)':'var(--d)'}">${mine?'⭐나':it.bloggername?.substring(0,8)||''}</span></div>`}})}
+const sum=myRank?`<div style="text-align:center;padding:12px;background:var(--gd);border-radius:6px;margin-bottom:8px"><div style="font-size:10px;color:var(--g)">"${kw}"</div><div style="font-size:28px;font-weight:900;color:var(--g);font-family:var(--m)">${myRank}위</div></div>`:`<div style="text-align:center;padding:12px;background:#ff525215;border-radius:6px;margin-bottom:8px"><div style="font-size:14px;font-weight:700;color:var(--r)">30위 내 미발견</div></div>`;
+el('rank-res').innerHTML=sum+h;
+// Competitor
+renderComp(compData,kw);
+// Save history
+S.rankHistory.unshift({kw,rank:myRank||'30+',time:new Date().toLocaleString('ko-KR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})});
+if(S.rankHistory.length>50)S.rankHistory.pop();localStorage.setItem('rankHist',JSON.stringify(S.rankHistory));renderRankHist();updateDS();
+// Duplicate keyword check
+const dupPost=S.postHistory.find(p=>p.kw===kw);if(dupPost)toast('⚠️ 이 키워드로 '+dupPost.date+'에 발행한 기록 있음!');
+}catch(e){el('rank-res').innerHTML=`<p style="color:var(--r);font-size:11px">${e.message}</p>`}}
+
+function renderComp(data,kw){
+if(!data.length){el('comp-res').innerHTML='<p style="color:var(--d);font-size:11px;text-align:center;padding:10px">데이터 없음</p>';return}
+let h=`<div class="comp-row comp-head"><span>순위</span><span>블로그</span><span>내용량</span><span>블로거</span></div>`;
+data.forEach(c=>{h+=`<div class="comp-row"><span class="rn ${c.rank<=3?'r'+c.rank:'ro'}">${c.rank}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.title}</span><span style="color:var(--c)">${c.chars}자</span><span style="color:var(--d)">${c.name.substring(0,6)}</span></div>`});
+const avg=Math.round(data.reduce((s,c)=>s+c.chars,0)/data.length);
+h+=`<div style="margin-top:8px;padding:8px;background:var(--s2);border-radius:6px;font-size:10px"><strong style="color:var(--c)">💡 전략:</strong> 상위 5개 평균 <strong style="color:var(--g)">${avg}자</strong> → 이 이상 작성 시 상위 진입 가능성 ↑</div>`;
+el('comp-res').innerHTML=h}
+
+function renderRankHist(){if(!S.rankHistory.length)return;
+let h='<div style="border-top:1px solid var(--bd);padding-top:8px;margin-top:8px"><div style="font-size:10px;font-weight:700;color:var(--d);margin-bottom:6px">📋 기록</div>';
+S.rankHistory.slice(0,15).forEach(r=>{const ok=typeof r.rank==='number'&&r.rank<=10;h+=`<div class="hist-row"><span>${r.kw}</span><span style="display:flex;gap:6px"><span class="st ${ok?'sok':r.rank==='30+'?'ser':'swn'}">${r.rank}위</span><span style="font-size:9px;color:var(--d)">${r.time}</span></span></div>`});
+h+='</div>';el('rank-hist').innerHTML=h}
+
+function updateDS(){el('ds-kw').textContent=S.rankHistory.length;el('ds-top').textContent=S.rankHistory.filter(r=>typeof r.rank==='number'&&r.rank<=10).length}
+
+// ===== PUBLISH TIME RECOMMEND =====
+function renderPubTime(){
+const times={비즈니스:{best:'오전 8~9시',alt:'오후 1~2시',reason:'출근 전후 검색 피크'},부동산:{best:'오후 7~9시',alt:'토요일 오전',reason:'퇴근 후 관심 검색'},IT:{best:'오전 10~11시',alt:'오후 3~4시',reason:'업무시간 검색'},건강:{best:'오전 7~8시',alt:'오후 9~10시',reason:'기상/취침 전 검색'},맛집:{best:'오전 11시~12시',alt:'오후 5~6시',reason:'식사 전 검색'},여행:{best:'오후 8~10시',alt:'일요일 오후',reason:'여가시간 검색'},교육:{best:'오후 9~11시',alt:'주말 오전',reason:'학습시간'},생활:{best:'오전 9~10시',alt:'오후 8~9시',reason:'주부/직장인 검색'}};
+const cat=S.cat||'비즈니스';const t=times[cat]||times['비즈니스'];
+el('pub-time').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:var(--gd);border-radius:6px;padding:10px;text-align:center"><div style="font-size:9px;color:var(--g)">🏆 최적 시간</div><div style="font-size:16px;font-weight:900;color:var(--g)">${t.best}</div></div><div style="background:var(--s2);border-radius:6px;padding:10px;text-align:center"><div style="font-size:9px;color:var(--d)">차선</div><div style="font-size:14px;font-weight:700;color:var(--c)">${t.alt}</div></div></div><div style="font-size:10px;color:var(--d);margin-top:6px">📌 ${cat} 카테고리: ${t.reason}</div>`}
+
+// ===== POSTING HISTORY =====
+function savePostHistory(){if(!S.selTitle||!S.kw)return;
+const entry={kw:S.optKw||S.kw,title:S.selTitle,date:new Date().toLocaleDateString('ko-KR'),cat:S.cat};
+S.postHistory.unshift(entry);if(S.postHistory.length>100)S.postHistory.pop();
+localStorage.setItem('postHist',JSON.stringify(S.postHistory));renderPostHist();toast('📋 발행 기록 저장')}
+
+function renderPostHist(){if(!S.postHistory.length){el('post-hist').innerHTML='<p style="color:var(--d);font-size:11px;text-align:center;padding:10px">발행 기록 없음</p>';return}
+let h='';S.postHistory.slice(0,20).forEach(p=>{h+=`<div class="hist-row"><span style="display:flex;gap:6px;align-items:center"><span class="tag" style="font-size:8px;padding:1px 5px">${p.cat||''}</span><span>${p.kw}</span></span><span style="font-size:9px;color:var(--d)">${p.date}</span></div>`});
+el('post-hist').innerHTML=h}
+
+// ===== TREND =====
+async function chkTrend(){const kws=el('trend-kw').value.trim();if(!kws)return toast('키워드 입력');
+const nid=el('k-nid')?.value,nsec=el('k-nsec')?.value;if(!nid||!nsec)return toast('⚙ API 필요');
+el('trend-res').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+const kwL=kws.split(',').map(k=>k.trim()).filter(k=>k).slice(0,3);const today=new Date(),start=new Date(today);start.setMonth(start.getMonth()-3);
+try{const r=await fetch('https://openapi.naver.com/v1/datalab/search',{method:'POST',headers:{'Content-Type':'application/json','X-Naver-Client-Id':nid,'X-Naver-Client-Secret':nsec},body:JSON.stringify({startDate:start.toISOString().split('T')[0],endDate:today.toISOString().split('T')[0],timeUnit:'week',keywordGroups:kwL.map(k=>({groupName:k,keywords:[k]}))})});
+const d=await r.json();if(d.results){const colors=['var(--c)','var(--g)','var(--p)'];let h='';
+d.results.forEach((res,ri)=>{h+=`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:${colors[ri]};margin-bottom:4px">📈 ${res.title}</div>`;
+const mx=Math.max(...res.data.map(d=>d.ratio));res.data.slice(-12).forEach(p=>{const w=p.ratio/mx*100;h+=`<div style="display:flex;align-items:center;gap:6px;margin:1px 0"><span style="font-size:8px;color:var(--d);width:44px;flex-shrink:0">${p.period.substring(5)}</span><div class="trend-bar" style="width:${w}%;background:${colors[ri]}"></div><span style="font-size:8px;color:var(--d)">${p.ratio.toFixed(0)}</span></div>`});h+='</div>'});
+el('trend-res').innerHTML=h}}catch(e){el('trend-res').innerHTML=`<p style="color:var(--r);font-size:11px">${e.message}</p>`}}
+
+// ===== STEP 1: KW OPTIMIZE =====
+let kwT;function optKW(){const v=el('my-kw').value.trim();if(!v){el('opt-kw').innerHTML='<div class="rl">대기</div><div class="rv" style="color:var(--d);font-size:12px">키워드 입력 시 자동</div>';el('auto-card').style.display='none';el('gen-btn').disabled=true;el('ilink-card').style.display='none';el('kwrank-card').style.display='none';return}clearTimeout(kwT);el('opt-kw').innerHTML='<div class="rl">🔄 분석...</div>';kwT=setTimeout(()=>doOpt(v),800)}
+
+async function doOpt(kw){S.kw=kw;const api=el('k-claude')?.value||el('k-gemini')?.value;if(!api){demoOpt(kw);return}
+const prompt=`네이버 블로그 SEO 전문가로서 키워드를 분석하세요.
+
+입력 키워드: "${kw}"
+
+[제목 규칙]
+- 검색한 사람이 클릭하고 싶어지는 제목으로 변환
+- "총정리" "완벽가이드" 같은 뻔한 패턴 금지
+- 대신: 숫자+현실감+궁금증 유발 (예: "5천만원이면 될까?" "현실 수익 공개" "3가지 함정")
+- 25자 이내, 키워드 맨 앞
+
+[글자수 규칙]
+- 1500~2200자 (네이버 상위노출 + 이탈방지 최적 구간)
+
+JSON만 출력:
+{"optimizedKeyword":"클릭되는 제목(25자이내)","reason":"변환이유1줄","category":"비즈니스|부동산|IT|건강|맛집|여행|교육|생활|자동차 중1개","tone":"정보전달|후기|비교분석|리스트 중1개","imageCount":8~15숫자,"charCount":1500~2200숫자,"subKeywords":["서브3개"],"categoryReason":"","toneReason":"","imageReason":"","charReason":""}`;
+try{let t;if(!el('k-claude')?.value){const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${api}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});t=(await r.json()).candidates[0].content.parts[0].text}
+else{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});t=(await r.json()).content[0].text}
+applyOpt(JSON.parse(t.match(/\{[\s\S]*\}/)[0]))}catch(e){demoOpt(kw)}}
+
+function demoOpt(kw){const cats={'창업':'비즈니스','프랜차이즈':'비즈니스','부동산':'부동산','코딩':'IT','건강':'건강','맛집':'맛집','여행':'여행','영어':'교육'};let cat='비즈니스';Object.keys(cats).forEach(k=>{if(kw.includes(k))cat=cats[k]});
+applyOpt({optimizedKeyword:kw+' 얼마면 가능할까?',reason:'궁금증유발→클릭율↑',category:cat,tone:'정보전달',imageCount:10,charCount:1800,subKeywords:[kw+' 비용',kw+' 후기',kw+' 현실'],categoryReason:cat+' C-Rank',toneReason:'검색의도 매칭',imageReason:'상위 평균 10장',charReason:'체류+이탈방지 최적'})}
+
+function applyOpt(d){S.optKw=d.optimizedKeyword;S.cat=d.category;S.tone=d.tone;S.imgN=d.imageCount;S.charN=d.charCount;
+el('opt-kw').innerHTML=`<div class="rl">✅ 최적화 완료</div><div class="rv">${d.optimizedKeyword}</div><div class="rs">💡 ${d.reason}</div><div style="margin-top:6px">${(d.subKeywords||[]).map(k=>'<span class="tag">'+k+'</span>').join('')}</div>`;
+el('auto-set').innerHTML=`<div class="auto-item"><div class="al">카테고리</div><div class="av">${d.category}</div><div class="ar">${d.categoryReason||''}</div></div><div class="auto-item"><div class="al">톤</div><div class="av">${d.tone}형</div><div class="ar">${d.toneReason||''}</div></div><div class="auto-item"><div class="al">이미지</div><div class="av">${d.imageCount}장</div><div class="ar">${d.imageReason||''}</div></div><div class="auto-item"><div class="al">글자수</div><div class="av">${d.charCount}자</div><div class="ar">${d.charReason||''}</div></div>`;
+el('auto-card').style.display='block';el('gen-btn').disabled=false;renderPubTime();
+// Internal link suggest
+suggestILinks();
+// Auto keyword rank check
+autoRankCheck(d.optimizedKeyword, d.subKeywords||[])}
+
+function suggestILinks(){
+if(!S.postHistory.length){el('ilink-card').style.display='none';return}
+const kw=S.optKw||S.kw;const related=S.postHistory.filter(p=>p.kw!==kw&&(p.kw.includes(kw.split(' ')[0])||p.cat===S.cat)).slice(0,3);
+if(!related.length){el('ilink-card').style.display='none';return}
+el('ilink-card').style.display='block';
+el('ilink-res').innerHTML=related.map(p=>`<div class="hist-row"><span>📎 ${p.title||p.kw}</span><span class="st sok">${p.date}</span></div>`).join('')+'<div style="font-size:9px;color:var(--y);margin-top:6px">💡 본문에 위 포스팅 링크 삽입 → 체류시간 + C-Rank ↑</div>'}
+
+// ===== AUTO RANK CHECK IN STEP 1 =====
+async function autoRankCheck(mainKw, subKws){
+  const bid=el('dash-bid').value.trim()||localStorage.getItem('bid');
+  const nid=el('k-nid')?.value, nsec=el('k-nsec')?.value;
+  if(!bid||!nid||!nsec){
+    el('kwrank-card').style.display='block';
+    el('kwrank-res').innerHTML='<div style="padding:10px;background:var(--s2);border-radius:6px;font-size:10px"><span style="color:var(--y)">⚠️ 순위 체크하려면:</span><br>1. 대시보드에서 블로그 ID 입력<br>2. API설정에서 네이버 API 키 등록<button class="btn bp bs" style="margin-top:6px" onclick="go(0)">대시보드로</button></div>';
+    return;
+  }
+  el('kwrank-card').style.display='block';
+  el('kwrank-loading').style.display='block';
+  el('kwrank-res').innerHTML='';
+  
+  // Check main keyword + sub keywords
+  const allKws=[mainKw, ...subKws.slice(0,3)];
+  let html='';
+  
+  for(const kw of allKws){
+    try{
+      const r=await fetch(`https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(kw)}&display=30&sort=sim`,{
+        headers:{'X-Naver-Client-Id':nid,'X-Naver-Client-Secret':nsec}
+      });
+      const d=await r.json();
+      let myRank=0;
+      if(d.items){d.items.forEach((it,i)=>{
+        if(it.bloggerlink?.includes(bid)&&!myRank) myRank=i+1;
+      })}
+      const isMain=kw===mainKw;
+      const rankColor=myRank&&myRank<=5?'var(--g)':myRank&&myRank<=10?'var(--c)':myRank?'var(--y)':'var(--r)';
+      const rankText=myRank?myRank+'위':'30위↓';
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--bd)">
+        <span style="font-size:11px;${isMain?'font-weight:700':''}"><span style="color:${isMain?'var(--c)':'var(--d)'};font-size:9px;margin-right:4px">${isMain?'메인':'서브'}</span>${kw}</span>
+        <span style="font-family:var(--m);font-size:12px;font-weight:700;color:${rankColor}">${rankText}</span>
+      </div>`;
+      
+      // Save to rank history
+      S.rankHistory.unshift({kw,rank:myRank||'30+',time:new Date().toLocaleString('ko-KR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})});
+    }catch(e){
+      html+=`<div style="padding:6px 10px;font-size:10px;color:var(--r)">${kw}: API 오류</div>`;
+    }
+  }
+  
+  if(S.rankHistory.length>50)S.rankHistory=S.rankHistory.slice(0,50);
+  localStorage.setItem('rankHist',JSON.stringify(S.rankHistory));
+  updateDS();
+  
+  // Strategy summary
+  const mainRank=S.rankHistory.find(r=>r.kw===mainKw);
+  const mr=mainRank?.rank;
+  let strategy='';
+  if(typeof mr==='number'&&mr<=5) strategy=`<div style="background:var(--gd);padding:8px;border-radius:6px;margin-top:8px;font-size:10px"><strong style="color:var(--g)">✅ "${mainKw}" ${mr}위 — 이미 상위권!</strong> 이 키워드로 추가 포스팅하면 C-Rank 강화</div>`;
+  else if(typeof mr==='number'&&mr<=15) strategy=`<div style="background:#ffd74015;padding:8px;border-radius:6px;margin-top:8px;font-size:10px"><strong style="color:var(--y)">⚡ "${mainKw}" ${mr}위 — 진입 가능 구간!</strong> 이 글로 역전 가능. 상위 블로그보다 더 길고 좋은 글 작성</div>`;
+  else strategy=`<div style="background:#ff525215;padding:8px;border-radius:6px;margin-top:8px;font-size:10px"><strong style="color:var(--r)">🎯 "${mainKw}" 30위 밖</strong> 서브키워드 중 순위 있는 것부터 공략 → 점진적 상승 전략</div>`;
+  
+  el('kwrank-loading').style.display='none';
+  el('kwrank-res').innerHTML=html+strategy;
+}
+
+// ===== STEP 2: GENERATE =====
+async function startGen(){go(3);el('gen-load').style.display='block';el('gen-res').style.display='none';el('gen-lt').textContent='AI 생성중...';
+const api=el('k-claude')?.value||el('k-gemini')?.value;if(!api){demoGen();return}
+const prompt=`당신은 네이버 블로그 상위노출 전문가이다.
+
+[키워드] ${S.optKw||S.kw}
+[카테고리] ${S.cat}
+[톤] ${S.tone}형
+[글자수] ${S.charN}자 (공백 제외)
+
+[품질 규칙 — 반드시 지켜라]
+1. 제목 3개: 25자이내, 키워드맨앞, "총정리/완벽가이드" 금지, 숫자+궁금증+현실감 (예: "5천만원이면 가능?" "현실 수익 공개")
+2. 소제목(##): 4~5개, 질문형 ("~얼마?" "~방법은?" "~될까?")
+3. 키워드 밀도: 1.5~2.5% (자연스럽게)
+4. 도입부: 1~2문장 호기심 훅 ("대부분 모르는 사실" "이것만 알면 달라진다")
+5. 마무리: 핵심 3줄 요약 (✅ 이모지 사용)
+
+[가독성 규칙 — 모바일 80% 트래픽]
+1. 한 문장 = 최대 40자. 짧게 끊어라.
+2. 2~3문장마다 줄바꿈 (\\n\\n)
+3. "~입니다" "~됩니다" 반복 금지. 말투 섞어라: "~거든요" "~했어요" "~인데요" "~더라고요"
+4. 숫자/금액은 구체적으로 ("약 5,000만원~8,000만원")
+5. 리스트 쓸 때 "첫째/둘째" 대신 "1️⃣ 2️⃣" 또는 "✅ ❌"
+
+[가시성 규칙 — 스마트블록 노출]
+1. 소제목은 질문형 → 스마트블록 스니펫 노출 확률 ↑
+2. 소제목 바로 아래 첫 문장에 답변 (구글 Featured Snippet 방식)
+3. 이미지 삽입 위치 표시: [이미지] 태그로 표시
+
+[AI 느낌 제거]
+- "다양한" "중요합니다" "결론적으로" "종합적으로" 사용 금지
+- 실제 경험 톤으로 ("제가 직접 알아본 결과" "상담 받아보니")
+- 문장 길이 랜덤하게 (짧은것 긴것 섞기)
+
+JSON만 출력:
+{"titles":["제목1","제목2","제목3"],"body":"## 소제목1\\n본문...","hashtags":["태그1",...최대10개],"imageKeywords":["이미지키워드1",...소제목당1개]}`;
+try{let t;if(!el('k-claude')?.value){const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${api}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});t=(await r.json()).candidates[0].content.parts[0].text}
+else{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})});t=(await r.json()).content[0].text}
+const j=JSON.parse(t.match(/\{[\s\S]*\}/)[0]);S.titles=j.titles;S.body=j.body;S.tags=j.hashtags;S.imgKws=j.imageKeywords||[];
+el('gen-lt').textContent='🔍 2차 검토...';
+try{const rp=`네이버 블로그 상위노출 검토관. 아래 글을 검토하고 수정하세요.
+
+[검토 기준]
+1. 한 문장 40자 초과 → 쪼개기
+2. "~입니다" 연속 3회 이상 → 말투 섞기 ("~거든요","~더라고요","~했어요")
+3. "다양한/중요합니다/결론적으로/종합적으로" → 삭제 또는 대체
+4. 2~3문장마다 줄바꿈(\\n\\n) 확인
+5. 키워드 밀도 1.5~2.5% 확인
+6. 소제목 질문형인지 확인
+7. [이미지] 태그 소제목마다 1개 있는지
+
+수정 필요하면 전체 본문 출력. 불필요하면 PASS.
+
+원문:
+${S.body}`;let rt;
+if(!el('k-claude')?.value){const r2=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${api}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:rp}]}]})});rt=(await r2.json()).candidates[0].content.parts[0].text}
+else{const r2=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:rp}]})});rt=(await r2.json()).content[0].text}
+if(!rt.includes('PASS')&&rt.length>100)S.body=rt;renderGen(true)}catch(e){renderGen(true)}
+}catch(e){demoGen()}}
+
+function demoGen(){const kw=S.optKw||S.kw;S.titles=[kw+' 얼마면 가능할까?',kw+' 현실 수익 공개',kw+', 이 3가지 모르면 망한다'];
+S.body=`${kw} 알아보고 계신가요?\n직접 발품 팔아서 정리한 내용이에요. 끝까지 보시면 실패 확률이 확 줄어듭니다.\n\n## ${kw}, 지금 해도 되는 걸까?\n\n결론부터요. 됩니다. 단, 조건이 있어요.\n\n최근 ${kw} 검색량이 전년 대비 30% 넘게 올랐거든요.\n그만큼 관심은 많은데, 준비 없이 뛰어드는 분들이 너무 많아요.\n\n${S.cat} 쪽에서 특히 수요가 늘었는데요.\n제대로 알고 시작하면 충분히 가능성 있습니다.\n\n[이미지]\n\n## ${kw} 비용, 현실적으로 얼마 드나?\n\n가장 많이 물어보시는 부분이에요.\n\n초기 비용은 대략 5,000만원~8,000만원 사이입니다.\n여기에 보증금, 인테리어, 장비비가 포함돼요.\n\n근데 이게 다가 아니에요.\n운영자금 최소 3개월치는 별도로 잡아야 합니다.\n\n합치면 실제 필요한 금액은 7,000만원~1억 정도 보셔야 해요.\n\n[이미지]\n\n## 성공하는 사람들은 뭐가 다를까?\n\n상담 200건 넘게 해보니까 패턴이 보이더라고요.\n\n1️⃣ 최소 3개월 시장조사를 해요.\n감으로 시작하는 분들은 대부분 1년 안에 접더라고요.\n\n2️⃣ 자금 여유가 있어요.\n운영자금 6개월치 확보한 분들이 살아남았습니다.\n\n3️⃣ 혼자 안 해요.\n전문가 상담 한 번이 수천만원 아껴줍니다. 진짜예요.\n\n[이미지]\n\n## 시작 전에 이것만 체크하세요\n\n상권분석은 기본이에요. 유동인구, 경쟁업체, 주요 연령대 꼭 보세요.\n\n계약서도 꼼꼼히요.\n위약금, 영업지역 보호범위, 로열티 구조가 핵심입니다.\n\n❌ 이거 안 보면 나중에 후회해요.\n\n[이미지]\n\n## 핵심 정리\n\n✅ ${kw}은 준비가 90%입니다\n✅ 실제 필요자금 7천~1억, 자금계획 먼저\n✅ 전문가 상담 한 번이 시행착오 수천만원 절약`;
+S.tags=[kw,kw+' 비용',kw+' 현실',kw+' 후기',kw+' 수익',kw+' 추천',kw+' 창업비용',kw+' 실패'];S.imgKws=[kw+' 매장',kw+' 비용표',kw+' 인테리어',kw+' 상권'];renderGen(true)}
+
+function renderGen(reviewed){el('gen-load').style.display='none';el('gen-res').style.display='block';if(reviewed)el('rv-badge').style.display='inline-flex';
+let h='';S.titles.forEach((t,i)=>{h+=`<label style="display:flex;align-items:center;gap:6px;padding:8px;border:1px solid var(--bd);border-radius:5px;margin:3px 0;cursor:pointer"><input type="radio" name="ts" ${i===0?'checked':''} onchange="S.selTitle=S.titles[${i}]" style="width:auto"><span style="font-size:13px;font-weight:600">${t}</span><span class="st ${t.length<=25?'sok':'ser'}" style="margin-left:auto">${t.length}자</span></label>`});
+el('title-opts').innerHTML=h;S.selTitle=S.titles[0];
+el('kw-disp').innerHTML=`<span class="tag" style="border-color:var(--g);color:var(--g)">${S.optKw||S.kw}</span>`;
+el('body-txt').value=S.body;el('body-txt').oninput=upSt;upSt();calcAIScore();
+el('tags-e').value=S.tags.map(t=>'#'+t.replace(/^#/,'')).join(' ');
+el('tags-d').innerHTML=S.tags.map(t=>'<span class="tag">#'+t.replace(/^#/,'')+'</span>').join('')}
+
+function upSt(){const b=el('body-txt').value,cc=b.replace(/\s/g,'').length,kw=S.optKw||S.kw,esc=kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),kc=(b.match(new RegExp(esc,'g'))||[]).length,den=cc>0?((kc*kw.length/cc)*100).toFixed(1):0,h2=(b.match(/^## /gm)||[]).length;
+el('st-ch').textContent=cc+'자';el('st-ch').className=`st ${cc>=1500&&cc<=2200?'sok':'swn'}`;
+el('st-de').textContent=den+'%';el('st-de').className=`st ${den>=1.5&&den<=2.5?'sok':den<1.5?'swn':'ser'}`;
+el('st-h2').textContent='H2:'+h2;el('st-h2').className=`st ${h2>=4&&h2<=5?'sok':'swn'}`}
+
+// ===== AI DETECTION SCORE =====
+function calcAIScore(){const b=el('body-txt').value;if(!b)return;
+// Heuristic: check for AI-like patterns
+let score=0;const sentences=b.split(/[.!?。]\s*/);
+const avgLen=sentences.reduce((s,x)=>s+x.length,0)/sentences.length;
+if(avgLen>40&&avgLen<60)score+=15; // AI tends uniform sentence length
+const lenVariance=sentences.reduce((s,x)=>s+Math.pow(x.length-avgLen,2),0)/sentences.length;
+if(lenVariance<200)score+=20; // Low variance = AI-like
+if(b.includes('다양한')&&b.includes('중요합니다'))score+=10;
+if((b.match(/입니다/g)||[]).length>8)score+=15;
+if((b.match(/하세요|해보세요|드리겠습니다/g)||[]).length>5)score+=10;
+if(b.includes('결론적으로')||b.includes('종합적으로'))score+=10;
+const uniqueWords=new Set(b.replace(/[^가-힣\s]/g,'').split(/\s+/));
+if(uniqueWords.size<b.split(/\s+/).length*0.4)score+=10;
+score=Math.min(100,Math.max(0,score));
+const fill=el('ai-fill');fill.style.width=score+'%';
+fill.style.background=score<30?'var(--g)':score<60?'var(--y)':'var(--r)';
+el('st-ai').textContent='AI감지:'+score+'%';el('st-ai').className=`st ${score<30?'sok':score<60?'swn':'ser'}`}
+
+// ===== REGEN PARTS =====
+async function regenPart(part){
+const api=el('k-claude')?.value||el('k-gemini')?.value;
+if(!api){toast('API 키 필요');return}
+toast('🔄 재생성중...');
+const kw=S.optKw||S.kw;let prompt='';
+if(part==='title')prompt=`네이버SEO. "${kw}" 제목 3개. 25자이내,키워드맨앞. "총정리/완벽가이드" 금지. 숫자+궁금증+현실감 필수 (예:"5천만원이면 될까?" "현실 수익 공개"). JSON:{"titles":["3개"]}`;
+else if(part==='body')prompt=`네이버SEO. "${kw}",${S.cat},${S.tone},${S.charN}자,H2:4~5,밀도1.5~2.5%. 질문형소제목, 한문장40자이내, 2~3문장마다줄바꿈, "입니다"반복금지, 경험톤("~거든요","~더라고요"), 숫자구체적, "다양한/중요합니다/결론적으로" 금지. 전체 본문만 출력.`;
+else prompt=`네이버SEO. "${kw}" 해시태그 8~10개. 메인키워드+비용+후기+현실+수익 등 검색되는 해시태그. JSON:{"hashtags":["태그들"]}`;
+try{let t;if(!el('k-claude')?.value){const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${api}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});t=(await r.json()).candidates[0].content.parts[0].text}
+else{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})});t=(await r.json()).content[0].text}
+if(part==='title'){const j=JSON.parse(t.match(/\{[\s\S]*\}/)[0]);S.titles=j.titles;renderGen(true)}
+else if(part==='body'){S.body=t;el('body-txt').value=t;upSt();calcAIScore();toast('📝 본문 재생성 완료')}
+else{const j=JSON.parse(t.match(/\{[\s\S]*\}/)[0]);S.tags=j.hashtags;el('tags-e').value=S.tags.map(t=>'#'+t.replace(/^#/,'')).join(' ');el('tags-d').innerHTML=S.tags.map(t=>'<span class="tag">#'+t.replace(/^#/,'')+'</span>').join('');toast('🏷️ 재생성 완료')}
+}catch(e){toast('❌ 재생성 실패')}}
+
+// ===== IMAGES =====
+function searchImgs(){const g=el('img-grid');g.innerHTML='';const kws=S.imgKws.length?S.imgKws:[S.kw];
+for(let i=0;i<Math.max(S.imgN,kws.length*3);i++){const d=document.createElement('div');d.className='img-item';d.innerHTML=`<span style="text-align:center;padding:6px">${kws[i%kws.length]||S.kw}<br><span style="color:var(--c)">${i+1}</span></span>`;d.onclick=function(){this.classList.toggle('selected');upImg()};g.appendChild(d)}upImg()}
+function upImg(){const s=document.querySelectorAll('#img-grid .selected').length;S.selImgs=Array.from(document.querySelectorAll('#img-grid .selected'));el('img-st').textContent=`${s}/${S.imgN}`;el('img-st').className=`st ${s>=S.imgN?'sok':s>0?'swn':'ser'}`}
+
+function prepAI(){const need=Math.max(0,S.imgN-S.selImgs.length);el('short-info').innerHTML=need>0?`<span class="st swn">부족:${need}장</span>`:`<span class="st sok">충분</span>`;
+el('ai-prompt').value=S.imgKws.slice(0,need).map((k,i)=>`${i+1}. "${k}" 비즈니스,16:9`).join('\n')||'부족없음'}
+function genAI(){const g=el('ai-grid'),need=Math.max(0,S.imgN-S.selImgs.length);g.innerHTML='';
+for(let i=0;i<need;i++){const d=document.createElement('div');d.className='img-item';d.innerHTML=`<span style="text-align:center;padding:6px">🎨${S.imgKws[i]||i+1}</span>`;d.onclick=function(){this.classList.toggle('selected')};g.appendChild(d)}
+if(!need)g.innerHTML='<div style="text-align:center;color:var(--g);padding:16px">✅ 불필요</div>';toast('🎨 완료')}
+
+// ===== CHECK =====
+function runChk(){const b=el('body-txt').value,t=S.selTitle||'',tags=el('tags-e').value.split(/\s+/).filter(x=>x.startsWith('#')),cc=b.replace(/\s/g,'').length,h2=(b.match(/^## /gm)||[]).length,kw=S.optKw||S.kw,esc=kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),kc=(b.match(new RegExp(esc,'g'))||[]).length,den=cc>0?((kc*kw.length/cc)*100).toFixed(1):0,gf=el('cta-gf').value,kk=el('cta-kk').value,imgC=S.selImgs.length+document.querySelectorAll('#ai-grid .selected').length;
+const ch=[{n:'제목 25자',ok:t.length>0&&t.length<=25,v:t.length?t.length+'자':'—'},{n:'본문 1500~2200자',ok:cc>=1500&&cc<=2200,v:cc+'자'},{n:'밀도 1.5~2.5%',ok:den>=1.5&&den<=2.5,v:den+'%'},{n:'H2 4~5개',ok:h2>=4&&h2<=5,v:h2+'개'},{n:'이미지 8~15',ok:imgC>=8&&imgC<=15,v:imgC+'장'},{n:'메타 제거',ok:true,v:'자동'},{n:'해시태그 5~10',ok:tags.length>=5&&tags.length<=10,v:tags.length+'개'},{n:'CTA',ok:!!(gf||kk),v:(gf||kk)?'OK':'없음'},{n:'QR변환',ok:true,v:'권장'},{n:'연속이미지',ok:true,v:'OK'}];
+const pass=ch.filter(c=>c.ok).length;
+el('chk-score').innerHTML=`<div style="text-align:center"><div style="font-size:36px;font-weight:900;color:${pass>=8?'var(--g)':pass>=5?'var(--y)':'var(--r)'};font-family:var(--m)">${pass}/10</div><div style="font-size:11px;color:var(--d)">${pass>=8?'✅ 발행 OK':pass>=5?'⚠️ 개선 권장':'❌ 수정'}</div></div>`;
+el('chk-list').innerHTML=ch.map(c=>`<div class="chk-row"><span>${c.n}</span><span class="st ${c.ok?'sok':'ser'}">${c.v} ${c.ok?'✅':'❌'}</span></div>`).join('')}
+
+// ===== FINAL =====
+function buildFinal(){const b=el('body-txt').value,cl=el('cta-cl').value||'문의해주세요 😊',gf=el('cta-gf').value,kk=el('cta-kk').value;
+
+// Replace [이미지] with numbered 사진 labels
+let imgNum=0;
+const bNumbered=b.replace(/\[이미지\]/g,()=>{imgNum++;return `[📷 사진 ${imgNum}]`});
+S.bodyNumbered=bNumbered; // save for copy
+
+// Build preview HTML
+let h='';imgNum=0;
+b.split('\n').forEach(l=>{
+  if(l.startsWith('## '))h+=`<h2>${l.replace('## ','')}</h2>`;
+  else if(l.trim()==='[이미지]'||l.trim().match(/^\[📷/)){
+    imgNum++;
+    h+=`<div style="background:#e8f4f8;border:2px dashed #4a90d9;border-radius:8px;padding:16px;text-align:center;margin:12px 0"><span style="font-size:14px;font-weight:700;color:#4a90d9">📷 사진 ${imgNum}</span><br><span style="font-size:10px;color:#888">여기에 이미지 업로드</span></div>`;
+  }
+  else if(!l.trim())h+='<br>';
+  else h+=`<p>${l}</p>`;
+});
+h+=`<br><p>${cl}</p>`;
+if(kk)h+=`<div class="cta-box">💬 <a href="${kk}">카카오톡 상담</a></div>`;
+if(gf)h+=`<div class="cta-box">📋 <a href="${gf}">상담 신청</a></div>`;
+el('preview').innerHTML=h;
+
+// Show image summary
+const totalImgs=imgNum;
+if(totalImgs>0){
+  let imgGuide=`<div style="background:var(--s2);border:1px solid var(--c);border-radius:8px;padding:12px;margin-top:12px"><div style="font-size:11px;font-weight:700;color:var(--c);margin-bottom:6px">📷 이미지 업로드 가이드 (총 ${totalImgs}장)</div>`;
+  for(let i=1;i<=totalImgs;i++){
+    imgGuide+=`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bd);font-size:11px"><span>사진 ${i}</span><span style="color:var(--d)">${S.imgKws[i-1]||'키워드 관련 이미지'}</span></div>`;
+  }
+  imgGuide+=`<div style="font-size:9px;color:var(--y);margin-top:6px">💡 이미지 파일명: 사진1_${(S.optKw||S.kw).replace(/\s/g,'_')}.jpg 형식 권장</div></div>`;
+  el('preview').innerHTML+=imgGuide;
+}
+
+buildSecCopy()}
+
+// ===== SECTION COPY WITH TIMER =====
+let secSections=[];
+function buildSecCopy(){
+// Use numbered version for section copy
+const src=S.bodyNumbered||el('body-txt').value;
+secSections=src.split(/^(?=## )/gm).filter(s=>s.trim());
+let h='';secSections.forEach((sec,i)=>{const title=sec.split('\n')[0].replace('## ','').substring(0,20);
+const imgCount=(sec.match(/\[📷/g)||[]).length;
+const imgBadge=imgCount?` <span class="st sin">📷×${imgCount}</span>`:'';
+h+=`<div class="sec-copy" id="sc-${i}"><span style="flex:1">📎 ${i+1}. ${title}${title.length>=20?'...':''}${imgBadge}</span><span class="timer" id="sct-${i}">—</span><button class="btn bp bs" id="scb-${i}" onclick="copySec(${i})">복사</button></div>`});
+el('sec-copy-list').innerHTML=h||'<p style="color:var(--d);font-size:11px">본문 없음</p>'}
+
+let secTimer=null;
+function copySec(i){
+  const text=secSections[i]||'';
+  navigator.clipboard.writeText(text);
+  el('sc-'+i).classList.add('done');
+  el('scb-'+i).textContent='✅';
+  const next=i+1;
+  const nextBtn=el('scb-'+next);
+  if(nextBtn){
+    let sec=12;nextBtn.disabled=true;el('sct-'+next).textContent=sec+'초';
+    clearInterval(secTimer);
+    secTimer=setInterval(()=>{
+      sec--;el('sct-'+next).textContent=sec+'초';
+      if(sec<=0){clearInterval(secTimer);el('sct-'+next).textContent='GO!';el('sct-'+next).style.color='var(--g)';nextBtn.disabled=false}
+    },1000);
+  }
+  toast('📋 복사'+(nextBtn?' — 12초 후 다음':''));
+}
+
+// ===== COPY =====
+function cp(type){const b=S.bodyNumbered||el('body-txt').value,cl=el('cta-cl').value||'',gf=el('cta-gf').value,kk=el('cta-kk').value;let t='';
+if(type==='title')t=S.selTitle;else if(type==='body')t=b;else if(type==='tags')t=el('tags-e').value;
+else if(type==='cta'){t=cl+'\n\n';if(kk)t+='💬 '+kk+'\n';if(gf)t+='📋 '+gf}
+else{t=b+'\n\n'+cl+'\n\n';if(kk)t+='💬 '+kk+'\n';if(gf)t+='📋 '+gf}
+navigator.clipboard.writeText(t).then(()=>toast('✅ 복사'))}
+
+// ===== BACKUP & RESTORE =====
+function backupData(){
+  const data={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    data[k]=localStorage.getItem(k);
+  }
+  data._backupDate=new Date().toISOString();
+  data._version='v4.0';
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const date=new Date().toISOString().split('T')[0];
+  a.download=`blog-master-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  localStorage.setItem('lastBackup',new Date().toLocaleString('ko-KR'));
+  updateBackupInfo();
+  toast('📥 백업 완료');
+}
+
+function restoreData(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      let count=0;
+      Object.keys(data).forEach(k=>{
+        if(!k.startsWith('_')){
+          localStorage.setItem(k,data[k]);
+          count++;
+        }
+      });
+      toast('📤 복원 완료 ('+count+'개 항목)');
+      updateBackupInfo();
+      // Reload all data
+      loadK();
+      updateDS();
+      renderPostHist();
+      renderRankHist();
+    }catch(err){
+      toast('❌ 파일 오류');
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function updateBackupInfo(){
+  const last=localStorage.getItem('lastBackup');
+  const lbEl=el('last-backup');
+  if(lbEl){
+    if(last){lbEl.textContent=last;lbEl.style.color='var(--g)'}
+    else{lbEl.textContent='없음';lbEl.style.color='var(--y)'}
+  }
+  const total=localStorage.length;
+  const infoEl=el('backup-info');
+  if(infoEl)infoEl.textContent=`현재 저장된 항목: ${total}개`;
+}
+
+window.onload=()=>{
+  // API 키 자동 주입 (최초 실행 시)
+  const defaults={'k-gemini':'AIzaSyCg4xE3lYbZVxWmP9vpcccmpLVxIr3Czms','k-nid':'hiJJu_1UcVuZCL2hx2N0','k-nsec':'q2jUORq9ch'};
+  for(const[k,v]of Object.entries(defaults)){if(!localStorage.getItem(k))localStorage.setItem(k,v)}
+  buildAPIs();loadK();updateDS();renderPostHist();updateBackupInfo();
+};
+</script>
+</body>
+</html>
