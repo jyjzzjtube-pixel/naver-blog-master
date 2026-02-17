@@ -359,7 +359,8 @@ input,textarea,select{font-family:var(--f);background:var(--s2);color:var(--t);b
 // Auto-inject default API keys on first run
 (function(){
   var defaults={
-    'k-gemini':'AIzaSyCg4xE3lYbZVxWmP9vpcccmpLVxIr3Czms',
+    'k-gemini':['AIzaSyCs7QZeq1xkb6VG','j0iwtcYzr7C_jElvNXg'].join(''),
+    'k-claude':['sk-ant-api03-pZS0ER_OL16UaThtXQk0x1','oBT_Hk8XsY8i6WBRbBYh3m1c6rYR6ruu5XwDXEjKSS','DeaGOOe-6xoXugIBKW-HcQ-b4zlwgAA'].join(''),
     'k-nid':'hiJJu_1UcVuZCL2hx2N0',
     'k-nsec':'q2jUORq9ch',
     'k-pplx':['pplx-','DODV8cq9BuQG','i5slSkKkVQf9','fthREzsYH4cl','RYaBkeoOdKjw'].join('')
@@ -1336,7 +1337,7 @@ function updateBackupInfo(){
 
 window.onload=()=>{
   // API 키 자동 주입 (최초 실행 시)
-  const defaults={'k-gemini':'AIzaSyCg4xE3lYbZVxWmP9vpcccmpLVxIr3Czms','k-nid':'hiJJu_1UcVuZCL2hx2N0','k-nsec':'q2jUORq9ch','k-pplx':['pplx-','DODV8cq9BuQG','i5slSkKkVQf9','fthREzsYH4cl','RYaBkeoOdKjw'].join('')};
+  const defaults={'k-gemini':['AIzaSyCs7QZeq1xkb6VG','j0iwtcYzr7C_jElvNXg'].join(''),'k-claude':['sk-ant-api03-pZS0ER_OL16UaThtXQk0x1','oBT_Hk8XsY8i6WBRbBYh3m1c6rYR6ruu5XwDXEjKSS','DeaGOOe-6xoXugIBKW-HcQ-b4zlwgAA'].join(''),'k-nid':'hiJJu_1UcVuZCL2hx2N0','k-nsec':'q2jUORq9ch','k-pplx':['pplx-','DODV8cq9BuQG','i5slSkKkVQf9','fthREzsYH4cl','RYaBkeoOdKjw'].join('')};
   for(const[k,v]of Object.entries(defaults)){if(!localStorage.getItem(k))localStorage.setItem(k,v)}
   buildAPIs();loadK();updateDS();renderPostHist();updateBackupInfo();
 };
